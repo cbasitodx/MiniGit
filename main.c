@@ -10,6 +10,10 @@ int main() {
         if (argc == -1) {
             break;
         }
+        if (argc == 0) {
+            free(args);
+            continue;
+        }
 
         // Check if we are in front of a minigit command...
         // If we are not, just echo and go to the next iteration
@@ -21,7 +25,8 @@ int main() {
         }
 
         // If we are, we now have to check which command we are running
-        // TODO...
+        if(argc == 1) { printf("Run 'minigit --help' for help with the use of minigit\n"); continue; }
+        if(strcmp(args[1], "init") == 0) { initRepo(); }
 
         // Always free when done 
         free(args);
