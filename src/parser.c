@@ -12,21 +12,31 @@ int parseMiniGitArgs(char ***args_out) {
 
     // Strip trailing spaces and newline
     int end = strlen(line) - 1;
-    while (end >= 0 && (line[end] == ' ' || line[end] == '\n' || line[end] == '\r')) { line[end--] = '\0'; }
+    while (end >= 0 && (line[end] == ' ' || line[end] == '\n' || line[end] == '\r')) {
+        line[end--] = '\0';
+    }
     // Skip leading spaces
     int start = 0;
-    while (line[start] == ' ') { start++; }
+    while (line[start] == ' ') {
+        start++;
+    }
 
-    if (start > 0) { memmove(line, line + start, strlen(line) - start + 1); }
+    if (start > 0) {
+        memmove(line, line + start, strlen(line) - start + 1);
+    }
 
     // Collapse internal runs of spaces to a single space
     int read = 0, write = 0;
     bool in_space = false;
     while (line[read] != '\0') {
         if (line[read] == ' ') {
-            if (!in_space) { line[write++] = ' '; in_space = true; }
+            if (!in_space) {
+                line[write++] = ' ';
+                in_space = true;
+            }
         } else {
-            line[write++] = line[read]; in_space = false;
+            line[write++] = line[read];
+            in_space = false;
         }
         read++;
     }
