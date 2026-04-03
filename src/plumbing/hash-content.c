@@ -5,25 +5,64 @@
  *
  * @param data The raw bytes to hash.
  * @param len The length of the data in bytes.
- * @param md The output buffer for the hash (must be at least SHA_DIGEST_LENGTH bytes).
+ * @param out_hash The output buffer for the hash (must be at least SHA_DIGEST_LENGTH bytes).
  */
-void hashBlob(const unsigned char *data, size_t len, unsigned char *md) {
-    // Prepare the header
-    char header[HEADER_SIZE];
-    int header_len = snprintf(header, sizeof(header), "blob %lld", len) + 1; // Account for \0
+bool hashBlob(const unsigned char *data, size_t len, unsigned char *out_hash) {
+    EVP_MD_CTX *ctx = NULL;
+    const EVP_MD *md = NULL;
+    unsigned int hash_len = 0;
 
-    // Prepare the hash
-    SHA_CTX context;
-    SHA1_Init(&context);
+    // 1. Create a message digest context
+    ctx = EVP_MD_CTX_new();
+    if (!ctx) {
+        return false;
+    }
 
-    // Hash the header
-    SHA1_Update(&context, header, header_len);
+    // 2. Fetch the SHA1 algorithm
+    md = EVP_sha1();
 
-    // Hash the file content
-    SHA1_Update(&context, data, len);
+    // 3. Initialize the digest operation
+    if (!EVP_DigestInit_ex(ctx, md, NULL)) {
+        EVP_MD_CTX_free(ctx);
+        return false;
+    }
 
-    SHA1_Final(md, &context);
+    // 4. Prepare and hash the Git header: "blob <size>\0"
+    char header[64];
+    int header_len = snprintf(header, sizeof(header), "blob %zu", len) + 1;
+
+    if (!EVP_DigestUpdate(ctx, header, header_len) ||
+        !EVP_DigestUpdate(ctx, data, len)) {
+        EVP_MD_CTX_free(ctx);
+        return false;
+    }
+
+    // 5. Finalize the hash
+    if (!EVP_DigestFinal_ex(ctx, out_hash, &hash_len)) {
+        EVP_MD_CTX_free(ctx);
+        return false;
+    }
+
+    // 6. Clean up memory
+    EVP_MD_CTX_free(ctx);
+    return true;
 }
 
-void hashContent(bool write) {
+bool handleArgs(int argc, char ***args_in, char ***args_out) {
+    if (argc == 1) {
+        fprintf(stderr, "Not enough arguments\n");
+        *args_out = NULL;
+        return false;
+    }
+
+    if (argc == 2) {
+        if (strcmp(args_in[1], OPTION_STD_IN) == 0) {
+        }
+    }
+}
+
+void hashContent(int argc, char ***args) {
+    char **args_processed = NULL;
+
+    handleArgs(argc, args, &args_processed);
 }

@@ -6,8 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <openssl/sha.h>
+#include <openssl/evp.h>
 
 #define HEADER_SIZE 64
+#define OPTION_STD_IN "--stdin"
+
+void hashContent(int argc, char ***args);
 
 #endif /* HASH_CONTENT_H */

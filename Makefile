@@ -1,6 +1,7 @@
 # Compiler and flags
 CC      = gcc
-CFLAGS  = -Wall -Wextra -std=c11 -Iinclude   # -I adds include/ to the header search path
+CFLAGS  = $(shell cat compile_flags.txt)
+LDFLAGS = -lcrypto
 
 # Name of the final executable
 TARGET  = minigit
@@ -9,7 +10,7 @@ TARGET  = minigit
 BUILD   = build
 
 # Source files: main.c plus everything under src/
-SRC     = main.c $(wildcard src/*.c)
+SRC     = main.c $(shell find src -name "*.c")
 
 # Derive object file list: strip directory, swap .c for .o, prefix with build/
 # e.g. src/foo.c -> build/foo.o, main.c -> build/main.o
@@ -24,7 +25,7 @@ all: $(TARGET)
 # Link all object files into the final binary
 # $@ = target name (minigit), $^ = all prerequisites (the .o files)
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Compile root-level .c files (e.g. main.c) into build/
 # | $(BUILD) is an order-only prerequisite: ensures the dir exists before compiling
@@ -33,6 +34,10 @@ $(BUILD)/%.o: %.c | $(BUILD)
 
 # Compile src/*.c files into build/
 $(BUILD)/%.o: src/%.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compile src/plumbing/*.c files into build/
+$(BUILD)/%.o: src/plumbing/%.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Create the build directory if it doesn't exist

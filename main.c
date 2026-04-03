@@ -38,6 +38,10 @@ int main() {
             initRepo();
         }
 
+        if (strcmp(args[1], "hash-object") == 0) {
+            hashContent(&args);
+        }
+
         // Always free when done
         free(args);
     }
