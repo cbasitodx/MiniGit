@@ -3,6 +3,12 @@ CC      = gcc
 CFLAGS  = $(shell cat compile_flags.txt)
 LDFLAGS = -lcrypto
 
+# macOS: OpenSSL is keg-only, so the headers and libs aren't on the default path
+ifeq ($(shell uname), Darwin)
+	CFLAGS  += -I$(shell brew --prefix openssl)/include
+	LDFLAGS += -L$(shell brew --prefix openssl)/lib
+endif
+
 # Name of the final executable
 TARGET  = minigit
 
