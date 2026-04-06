@@ -39,7 +39,7 @@ int main() {
         }
 
         if (strcmp(args[1], "hash-object") == 0) {
-            hashContent(&args);
+            // hashContent(&args);
         }
 
         // Always free when done

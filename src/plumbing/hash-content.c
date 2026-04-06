@@ -1,4 +1,11 @@
 #include "plumbing/hash-content.h"
+#include <string.h>
+
+typedef struct {
+    bool write;
+    bool use_stdin;
+    char *file_path;
+} hashContentArgs;
 
 /**
  * Helper function for hashing blocks of data.
@@ -48,21 +55,69 @@ bool hashBlob(const unsigned char *data, size_t len, unsigned char *out_hash) {
     return true;
 }
 
-bool handleArgs(int argc, char ***args_in, char ***args_out) {
+/**
+ * Handle command-line arguments for the hashContent function
+ * and save the results in a hashContentArgs struct.
+ *
+ * @param argc The number of command-line arguments.
+ * @param args_in The array of command-line arguments.
+ * @param args_out The output struct to store the parsed arguments.
+ *
+ * @return true if the arguments were successfully parsed, false otherwise.
+ */
+bool handleArgs(int argc, char **args_in, hashContentArgs *args_out) {
     if (argc == 1) {
         fprintf(stderr, "Not enough arguments\n");
-        *args_out = NULL;
         return false;
     }
 
-    if (argc == 2) {
-        if (strcmp(args_in[1], OPTION_STD_IN) == 0) {
+    if (argc > MAX_ARGS + 1) {
+        fprintf(stderr, "Too many arguments\n");
+        return false;
+    }
+
+    for (int i = 1; i < argc; i++) {
+        if (strncmp(args_in[i], OPTION_STD_IN, strlen(OPTION_STD_IN)) == 0) {
+            args_out->use_stdin = true;
+        }
+
+        else if (strncmp(args_in[i], OPTION_PATH, strlen(OPTION_PATH)) == 0) {
+            int start_index = strlen(OPTION_PATH); // Skip "path="
+
+            args_out->file_path = strdup(args_in[i] + start_index);
+            if (args_out->file_path == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                return false;
+            }
+        }
+
+        else if (strncmp(args_in[i], OPTION_WRITE, strlen(OPTION_WRITE)) == 0) {
+            args_out->write = true;
+        }
+
+        else {
+            fprintf(stderr, "Unknown option: %s\n", args_in[i]);
+            return false;
         }
     }
+
+    if (args_out->use_stdin && args_out->file_path != NULL) {
+        fprintf(stderr, "Cannot use both --stdin and --path options\n");
+        free(args_out->file_path);
+        return false;
+    }
+
+    return true;
 }
 
-void hashContent(int argc, char ***args) {
-    char **args_processed = NULL;
+bool hashFromStdin() {
+}
 
-    handleArgs(argc, args, &args_processed);
+void hashContent(int argc, char **args) {
+    hashContentArgs args_struct;
+
+    handleArgs(argc, args, &args_struct);
+
+    if (args_struct.use_stdin) {
+    }
 }
