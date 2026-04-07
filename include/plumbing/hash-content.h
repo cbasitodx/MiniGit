@@ -23,8 +23,9 @@ typedef struct {
     bool write;
     bool use_stdin;
     char *file_path;
-} hashContentArgs;
+} HashContentArgs;
 
-void hashContent(int argc, char **args);
+void hashContent(HashContentArgs *args);
+bool handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args_out);
 
 #endif /* HASH_CONTENT_H */

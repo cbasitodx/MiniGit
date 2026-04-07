@@ -15,7 +15,12 @@ int main(int argc, char *argv[]) {
         initRepo();
     }
     else if (strcmp(argv[1], "hash-object") == 0) {
-        hashContent(argc, argv);
+        HashContentArgs hashContentArgs = {0};
+        if (!handleHashContentArgsFromCLI(argc, argv, &hashContentArgs)) {
+            return 0;
+        }
+
+        hashContent(&hashContentArgs);
     }
     else if (strcmp(argv[1], "cat-file") == 0) {
         printf("placeholder");

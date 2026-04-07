@@ -1,5 +1,4 @@
 #include "plumbing/hash-content.h"
-#include <stdint.h>
 
 /**
  * Helper function for hashing blocks of data.
@@ -7,6 +6,8 @@
  * @param data The raw bytes to hash.
  * @param len The length of the data in bytes.
  * @param out_hash The output buffer for the hash (must be at least EVP_SHA1_HASH_LENGTH bytes).
+ *
+ * @return true if the hashing was successful, false otherwise.
  */
 bool hashBlob(const uint8_t *data, size_t len, uint8_t *out_hash) {
     EVP_MD_CTX *ctx = NULL;
@@ -49,9 +50,47 @@ bool hashBlob(const uint8_t *data, size_t len, uint8_t *out_hash) {
     return true;
 }
 
+void printHash(const uint8_t *hash) {
+    for (int i = 0; i < EVP_SHA1_HASH_LENGTH; i++) {
+        printf("%02x", hash[i]);
+    }
+    printf("\n");
+}
+
+void hashContent(HashContentArgs *args) {
+    Blob blob = {0};
+    FILE *file = NULL;
+
+    if (args->use_stdin) {
+        file = stdin;
+    } else {
+        file = fopen(args->file_path, "rb");
+        free(args->file_path);
+    }
+
+    blob = readData(file);
+    uint8_t hash[EVP_SHA1_HASH_LENGTH];
+
+    if (!hashBlob(blob.data, blob.size, hash)) {
+        fprintf(stderr, "Failed to hash data\n");
+    }
+
+    if (args->use_stdin) {
+        printHash(hash);
+    }
+
+    if (args->write) {
+        printf("Write functionality is not implemented yet\n");
+    }
+
+    free(blob.data);
+}
+
 /**
  * Handle command-line arguments for the hashContent function
  * and save the results in a hashContentArgs struct.
+ * It is the responsibility of the caller to free the file_path
+ * field in the struct if it is set.
  *
  * @param argc The number of command-line arguments.
  * @param args_in The array of command-line arguments.
@@ -59,7 +98,7 @@ bool hashBlob(const uint8_t *data, size_t len, uint8_t *out_hash) {
  *
  * @return true if the arguments were successfully parsed, false otherwise.
  */
-bool handleArgs(int argc, char **args_in, hashContentArgs *args_out) {
+bool handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args_out) {
     if (argc == 2) {
         fprintf(stderr, "Not enough arguments\n");
         return false;
@@ -92,6 +131,7 @@ bool handleArgs(int argc, char **args_in, hashContentArgs *args_out) {
 
         else {
             fprintf(stderr, "Unknown option: %s\n", args_in[i]);
+            free(args_out->file_path);
             return false;
         }
     }
@@ -102,40 +142,10 @@ bool handleArgs(int argc, char **args_in, hashContentArgs *args_out) {
         return false;
     }
 
-    return true;
-}
-
-bool hashFromStdin(bool write) {
-    Blob blob = readData(stdin);
-    uint8_t hash[EVP_SHA1_HASH_LENGTH];
-
-    if (!hashBlob(blob.data, blob.size, hash)) {
-        fprintf(stderr, "Failed to hash data from stdin\n");
-        free(blob.data);
+    if (!args_out->use_stdin && args_out->file_path == NULL) {
+        fprintf(stderr, "No input source specified\n");
         return false;
     }
 
-    for (int i = 0; i < EVP_SHA1_HASH_LENGTH; i++) {
-        printf("%02x", hash[i]);
-    }
-    printf("\n");
-
-    if (write) {
-        printf("Write functionality is not implemented yet\n");
-    }
-
     return true;
-}
-
-void hashContent(int argc, char **args) {
-    hashContentArgs args_struct;
-
-    if (!handleArgs(argc, args, &args_struct)) {
-        fprintf(stderr, "Failed to parse arguments\n");
-        return;
-    }
-
-    if (args_struct.use_stdin) {
-        hashFromStdin(args_struct.write);
-    }
 }
