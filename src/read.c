@@ -1,8 +1,8 @@
 #include "read.h"
 
-void growBuffer(char **data, size_t *capacity) {
+void growBuffer(uint8_t **data, size_t *capacity) {
     (*capacity) += CHUNK_SIZE;
-    char *temp = (char *)realloc(*data, (*capacity) * sizeof(char));
+    uint8_t *temp = (uint8_t *)realloc(*data, (*capacity) * sizeof(uint8_t));
 
     if (temp == NULL) {
         free(*data);
@@ -14,27 +14,26 @@ void growBuffer(char **data, size_t *capacity) {
     return;
 }
 
-size_t initializeBuffer(char **data) {
+size_t initializeBuffer(uint8_t **data) {
     *data = NULL;
     size_t capacity = 0;
     growBuffer(data, &capacity);
     return capacity;
 }
 
-size_t readData(FILE *stream, char **data) {
-    size_t capacity = initializeBuffer(data);
+Blob readData(FILE *stream) {
+    Blob blob = {0};
+    size_t capacity = initializeBuffer(&(blob.data));
 
     int chr;
-    size_t idx = 0;
-
     while ((chr = fgetc(stream)) != EOF) {
-        if (idx >= capacity) {
-            growBuffer(data, &capacity);
+        if (blob.size >= capacity) {
+            growBuffer(&(blob.data), &capacity);
         }
 
-        (*data)[idx] = (char)chr;
-        idx++;
+        blob.data[blob.size] = (uint8_t)chr;
+        blob.size++;
     }
 
-    return idx;
+    return blob;
 }
