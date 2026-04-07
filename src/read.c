@@ -21,13 +21,13 @@ size_t initializeBuffer(char **data) {
     return capacity;
 }
 
-size_t readData(char **data) {
+size_t readData(FILE *stream, char **data) {
     size_t capacity = initializeBuffer(data);
 
     int chr;
     size_t idx = 0;
 
-    while ((chr = getchar()) != EOF) {
+    while ((chr = fgetc(stream)) != EOF) {
         if (idx >= capacity) {
             growBuffer(data, &capacity);
         }
