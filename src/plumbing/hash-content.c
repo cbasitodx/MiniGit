@@ -1,13 +1,14 @@
 #include "plumbing/hash-content.h"
+#include <stdint.h>
 
 /**
  * Helper function for hashing blocks of data.
  *
  * @param data The raw bytes to hash.
  * @param len The length of the data in bytes.
- * @param out_hash The output buffer for the hash (must be at least SHA_DIGEST_LENGTH bytes).
+ * @param out_hash The output buffer for the hash (must be at least EVP_SHA1_HASH_LENGTH bytes).
  */
-bool hashBlob(const unsigned char *data, size_t len, unsigned char *out_hash) {
+bool hashBlob(const uint8_t *data, size_t len, uint8_t *out_hash) {
     EVP_MD_CTX *ctx = NULL;
     const EVP_MD *md = NULL;
     unsigned int hash_len = 0;
@@ -28,7 +29,7 @@ bool hashBlob(const unsigned char *data, size_t len, unsigned char *out_hash) {
     }
 
     // Prepare and hash the Git header: "blob <size>\0"
-    char header[64];
+    char header[HEADER_SIZE];
     int header_len = snprintf(header, sizeof(header), "blob %zu", len) + 1;
 
     if (!EVP_DigestUpdate(ctx, header, header_len) ||
@@ -59,17 +60,18 @@ bool hashBlob(const unsigned char *data, size_t len, unsigned char *out_hash) {
  * @return true if the arguments were successfully parsed, false otherwise.
  */
 bool handleArgs(int argc, char **args_in, hashContentArgs *args_out) {
-    if (argc == 1) {
+    if (argc == 2) {
         fprintf(stderr, "Not enough arguments\n");
         return false;
     }
 
-    if (argc > MAX_ARGS + 1) {
+    if (argc > MAX_ARGS + 2) {
         fprintf(stderr, "Too many arguments\n");
         return false;
     }
 
-    for (int i = 1; i < argc; i++) {
+    // Start at 2 to skip the command name and subcommand
+    for (int i = 2; i < argc; i++) {
         if (strncmp(args_in[i], OPTION_STD_IN, strlen(OPTION_STD_IN)) == 0) {
             args_out->use_stdin = true;
         }
@@ -103,14 +105,37 @@ bool handleArgs(int argc, char **args_in, hashContentArgs *args_out) {
     return true;
 }
 
-bool hashFromStdin() {
+bool hashFromStdin(bool write) {
+    Blob blob = readData(stdin);
+    uint8_t hash[EVP_SHA1_HASH_LENGTH];
+
+    if (!hashBlob(blob.data, blob.size, hash)) {
+        fprintf(stderr, "Failed to hash data from stdin\n");
+        free(blob.data);
+        return false;
+    }
+
+    for (int i = 0; i < EVP_SHA1_HASH_LENGTH; i++) {
+        printf("%02x", hash[i]);
+    }
+    printf("\n");
+
+    if (write) {
+        printf("Write functionality is not implemented yet\n");
+    }
+
+    return true;
 }
 
 void hashContent(int argc, char **args) {
     hashContentArgs args_struct;
 
-    handleArgs(argc, args, &args_struct);
+    if (!handleArgs(argc, args, &args_struct)) {
+        fprintf(stderr, "Failed to parse arguments\n");
+        return;
+    }
 
     if (args_struct.use_stdin) {
+        hashFromStdin(args_struct.write);
     }
 }

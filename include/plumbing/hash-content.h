@@ -12,6 +12,7 @@
 #include <openssl/evp.h>
 
 #define HEADER_SIZE 64
+#define EVP_SHA1_HASH_LENGTH 20
 
 #define MAX_ARGS 3
 #define OPTION_STD_IN "--stdin"
