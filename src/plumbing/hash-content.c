@@ -1,11 +1,4 @@
 #include "plumbing/hash-content.h"
-#include <string.h>
-
-typedef struct {
-    bool write;
-    bool use_stdin;
-    char *file_path;
-} hashContentArgs;
 
 /**
  * Helper function for hashing blocks of data.
@@ -19,22 +12,22 @@ bool hashBlob(const unsigned char *data, size_t len, unsigned char *out_hash) {
     const EVP_MD *md = NULL;
     unsigned int hash_len = 0;
 
-    // 1. Create a message digest context
+    // Create a message digest context
     ctx = EVP_MD_CTX_new();
     if (!ctx) {
         return false;
     }
 
-    // 2. Fetch the SHA1 algorithm
+    // Fetch the SHA1 algorithm
     md = EVP_sha1();
 
-    // 3. Initialize the digest operation
+    // Initialize the digest operation
     if (!EVP_DigestInit_ex(ctx, md, NULL)) {
         EVP_MD_CTX_free(ctx);
         return false;
     }
 
-    // 4. Prepare and hash the Git header: "blob <size>\0"
+    // Prepare and hash the Git header: "blob <size>\0"
     char header[64];
     int header_len = snprintf(header, sizeof(header), "blob %zu", len) + 1;
 
@@ -44,13 +37,13 @@ bool hashBlob(const unsigned char *data, size_t len, unsigned char *out_hash) {
         return false;
     }
 
-    // 5. Finalize the hash
+    // Finalize the hash
     if (!EVP_DigestFinal_ex(ctx, out_hash, &hash_len)) {
         EVP_MD_CTX_free(ctx);
         return false;
     }
 
-    // 6. Clean up memory
+    // Clean up memory
     EVP_MD_CTX_free(ctx);
     return true;
 }

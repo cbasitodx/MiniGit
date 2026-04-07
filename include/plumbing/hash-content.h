@@ -18,6 +18,12 @@
 #define OPTION_PATH "--path="
 #define OPTION_WRITE "-w"
 
+typedef struct {
+    bool write;
+    bool use_stdin;
+    char *file_path;
+} hashContentArgs;
+
 void hashContent(int argc, char **args);
 
 #endif /* HASH_CONTENT_H */
