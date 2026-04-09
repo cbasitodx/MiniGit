@@ -33,7 +33,6 @@ bool handleCatFileArgsFromCLI(int argc, char **args_in, CatFileArgs *args_out) {
     args_out->opt_exists = false;
     args_out->opt_print = false;
     args_out->object = NULL;
-    args_out->object_is_hash = false;
 
     // Start at 2 to skip the command name and subcommand
     if (strncmp(args_in[2], OPTION_TYPE, strlen(OPTION_TYPE)) == 0) {

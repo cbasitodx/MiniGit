@@ -21,8 +21,7 @@ typedef struct {
     bool opt_size;
     bool opt_exists;
     bool opt_print;
-    char *object;
-    bool object_is_hash;
+    char* object;
 } CatFileArgs;
 
 void catFile(CatFileArgs *args);

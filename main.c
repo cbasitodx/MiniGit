@@ -35,6 +35,14 @@ int main(int argc, char *argv[]) {
 
         catFile(&catFileArgs);
     }
+    else if (strcmp(argv[1], "rev-parse") == 0) {
+        RevParseArgs revParseArgs = {0};
+        if (!handleRevParseArgsFromCLI(argc, argv, &revParseArgs)) {
+            return 0;
+        }
+
+        revParse(&revParseArgs);
+    }
 
     else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
         printf("usage: %s <command>\n\n", MINIGIT_NAME);
@@ -42,6 +50,7 @@ int main(int argc, char *argv[]) {
         printf("   init          Create an empty minigit repository\n");
         printf("   hash-object   Compute object ID and optionally creates a blob from a file\n");
         printf("   cat-file      something something\n");
+        printf("   rev-parse     something something\n");
     }
 
     else {
