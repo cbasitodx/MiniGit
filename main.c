@@ -23,7 +23,12 @@ int main(int argc, char *argv[]) {
         hashContent(&hashContentArgs);
     }
     else if (strcmp(argv[1], "cat-file") == 0) {
-        printf("placeholder");
+        CatFileArgs catFileArgs = {0};
+        if (!handleCatFileArgsFromCLI(argc, argv, &catFileArgs)) {
+            return 0;
+        }
+
+        catFile(&catFileArgs);
     }
 
 

@@ -74,6 +74,7 @@ bool hashBlob(Blob *blob, uint8_t *out_hash) {
 }
 
 bool writeHashToFile(Blob *blob, uint8_t *hash) {
+    return false;
 }
 
 void printHash(const uint8_t *hash) {
@@ -131,7 +132,7 @@ bool handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *arg
         return false;
     }
 
-    if (argc > MAX_ARGS + 2) {
+    if (argc > HASH_CONTENT_MAX_ARGS + 2) {
         fprintf(stderr, "Too many arguments\n");
         return false;
     }

@@ -14,7 +14,7 @@
 #define HEADER_SIZE 64
 #define EVP_SHA1_HASH_LENGTH 20
 
-#define MAX_ARGS 3
+#define HASH_CONTENT_MAX_ARGS 3
 #define OPTION_STD_IN "--stdin"
 #define OPTION_PATH "--path="
 #define OPTION_WRITE "-w"
