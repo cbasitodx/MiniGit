@@ -1,4 +1,4 @@
-#include "include/minigit.h"
+#include "minigit.h"
 #include "plumbing.h"
 #include "porcelain.h"
 
@@ -14,6 +14,7 @@ int main(int argc, char *argv[]) {
     if (strcmp(argv[1], "init") == 0) {
         initRepo();
     }
+
     else if (strcmp(argv[1], "hash-object") == 0) {
         HashContentArgs hashContentArgs = {0};
         if (!handleHashContentArgsFromCLI(argc, argv, &hashContentArgs)) {
@@ -22,6 +23,7 @@ int main(int argc, char *argv[]) {
 
         hashContent(&hashContentArgs);
     }
+
     else if (strcmp(argv[1], "cat-file") == 0) {
         CatFileArgs catFileArgs = {0};
         if (!handleCatFileArgsFromCLI(argc, argv, &catFileArgs)) {
@@ -30,7 +32,6 @@ int main(int argc, char *argv[]) {
 
         catFile(&catFileArgs);
     }
-
 
     else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
         printf("usage: %s <command>\n\n", MINIGIT_NAME);
