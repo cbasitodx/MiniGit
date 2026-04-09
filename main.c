@@ -32,6 +32,7 @@ int main(int argc, char *argv[]) {
         printf("Available commands:\n");
         printf("   init          Create an empty minigit repository\n");
         printf("   hash-object   Compute object ID and optionally creates a blob from a file\n");
+        printf("   cat-file      something something\n");
     }
 
     else {
