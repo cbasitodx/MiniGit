@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+#include "utils/errors.h"
+
 #define HEADER_SIZE 64
 
 typedef struct {
@@ -13,7 +15,7 @@ typedef struct {
     char *file_path;
 } HashContentArgs;
 
-void hashContent(HashContentArgs *args);
-bool handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args_out);
+int hashContent(HashContentArgs *args, mg_error_t *err);
+int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args_out, mg_error_t *err);
 
 #endif /* HASH_CONTENT_H */

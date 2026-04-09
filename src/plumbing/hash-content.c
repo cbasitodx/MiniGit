@@ -3,11 +3,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "utils/errors.h"
 #include "utils/read.h"
 
 #define EVP_SHA1_HASH_LENGTH 20
 
+#define HASH_CONTENT_MIN_ARGS 1
 #define HASH_CONTENT_MAX_ARGS 3
+#define HASH_CONTENT_COMMAND "hash-content"
 #define OPTION_STD_IN "--stdin"
 #define OPTION_PATH "--path="
 #define OPTION_WRITE "-w"
@@ -15,6 +18,8 @@
 #define BLOB_READ_MODE "rb"
 #define BLOB_WRITE_MODE "wb"
 #define BLOB_FILE_DIRECTORY ".minigit/objects"
+
+#define HC_STD_PATH_CONFLICT 100
 
 /**
  * Write the git blob header to the beginning of the blob data.
@@ -100,7 +105,7 @@ void printHash(const uint8_t *hash) {
     printf("\n");
 }
 
-void hashContent(HashContentArgs *args) {
+int hashContent(HashContentArgs *args, mg_error_t *err) {
     Blob blob = {0};
     FILE *file = NULL;
 
@@ -108,6 +113,14 @@ void hashContent(HashContentArgs *args) {
         file = stdin;
     } else {
         file = fopen(args->file_path, "rb");
+        if (file == NULL) {
+            return mg_set_error(
+                err,
+                MG_ERR_FILE_OPEN_FAILED,
+                "Failed to open file: %s",
+                args->file_path
+            );
+        }
         free(args->file_path);
     }
 
@@ -116,7 +129,12 @@ void hashContent(HashContentArgs *args) {
 
     if (!writeHeaderToBlob(&blob) ||
         !hashBlob(&blob, hash)) {
-        fprintf(stderr, "Failed to hash data\n");
+        fclose(file);
+        return mg_set_error(
+            err,
+            MG_ERR_ALLOCATION_FAILED,
+            "Failed to process blob data"
+        );
     }
 
     if (args->use_stdin) {
@@ -128,6 +146,7 @@ void hashContent(HashContentArgs *args) {
     }
 
     free(blob.data);
+    fclose(file);
 }
 
 /**
@@ -140,17 +159,27 @@ void hashContent(HashContentArgs *args) {
  * @param args_in The array of command-line arguments.
  * @param args_out The output struct to store the parsed arguments.
  *
- * @return true if the arguments were successfully parsed, false otherwise.
+ * @return 0 if successful, non-zero if there's an error.
  */
-bool handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args_out) {
+int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args_out, mg_error_t *err) {
     if (argc == 2) {
-        fprintf(stderr, "Not enough arguments\n");
-        return false;
+        return mg_set_error(
+            err,
+            MG_ERR_NOT_ENOUGH_ARGS,
+            "%s requires at least %d argument",
+            HASH_CONTENT_COMMAND,
+            HASH_CONTENT_MIN_ARGS
+        );
     }
 
     if (argc > HASH_CONTENT_MAX_ARGS + 2) {
-        fprintf(stderr, "Too many arguments\n");
-        return false;
+        return mg_set_error(
+            err,
+            MG_ERR_TOO_MANY_ARGS,
+            "%s accepts at most %d arguments",
+            HASH_CONTENT_COMMAND,
+            HASH_CONTENT_MAX_ARGS
+        );
     }
 
     // Start at 2 to skip the command name and subcommand
@@ -164,8 +193,11 @@ bool handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *arg
 
             args_out->file_path = strdup(args_in[i] + start_index);
             if (args_out->file_path == NULL) {
-                fprintf(stderr, "Memory allocation failed\n");
-                return false;
+                return mg_set_error(
+                    err,
+                    MG_ERR_ALLOCATION_FAILED,
+                    "Memory allocation failed for file path"
+                );
             }
         }
 
@@ -174,22 +206,33 @@ bool handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *arg
         }
 
         else {
-            fprintf(stderr, "Unknown option: %s\n", args_in[i]);
             free(args_out->file_path);
-            return false;
+            return mg_set_error(err, MG_ERR_UNKNOWN_OPTION, "Unknown option: %s", args_in[i]);
         }
     }
 
     if (args_out->use_stdin && args_out->file_path != NULL) {
-        fprintf(stderr, "Cannot use both --stdin and --path options\n");
         free(args_out->file_path);
-        return false;
+        return mg_set_error(
+            err,
+            HC_STD_PATH_CONFLICT,
+            "%s: cannot use both %s and %s options",
+            HASH_CONTENT_COMMAND,
+            OPTION_STD_IN,
+            OPTION_PATH
+        );
     }
 
     if (!args_out->use_stdin && args_out->file_path == NULL) {
-        fprintf(stderr, "No input source specified\n");
-        return false;
+        return mg_set_error(
+            err,
+            MG_ERR_NOT_ENOUGH_ARGS,
+            "%s requires either %s or %s option",
+            HASH_CONTENT_COMMAND,
+            OPTION_STD_IN,
+            OPTION_PATH
+        );
     }
 
-    return true;
+    return MG_SUCCESS;
 }
