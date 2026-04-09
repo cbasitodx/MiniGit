@@ -1,6 +1,9 @@
-#include "minigit.h"
-#include "plumbing.h"
-#include "porcelain.h"
+#include <stdio.h>
+#include <string.h>
+
+#include "plumbing/cat-file.h"
+#include "plumbing/hash-content.h"
+#include "porcelain/init.h"
 
 #define MINIGIT_NAME "minigit"
 

@@ -1,27 +1,11 @@
 #ifndef HASH_CONTENT_H
 #define HASH_CONTENT_H
 
-#include "utils/read.h"
-
+#include <openssl/evp.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
-#include <openssl/evp.h>
-
 #define HEADER_SIZE 64
-#define EVP_SHA1_HASH_LENGTH 20
-
-#define HASH_CONTENT_MAX_ARGS 3
-#define OPTION_STD_IN "--stdin"
-#define OPTION_PATH "--path="
-#define OPTION_WRITE "-w"
-
-#define BLOB_READ_MODE "rb"
-#define BLOB_WRITE_MODE "wb"
-#define BLOB_FILE_DIRECTORY ".minigit/objects"
 
 typedef struct {
     bool write;

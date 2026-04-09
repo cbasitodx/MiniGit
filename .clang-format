@@ -1,8 +1,8 @@
 ---
-Language:        C
+Language: Cpp
 
 # Standard Model
-BasedOnStyle:  LLVM
+BasedOnStyle: LLVM
 
 # So braces are in the same line as the if, else, while, etc
 BreakBeforeBraces: Attach
@@ -16,6 +16,13 @@ SpaceBeforeParens: ControlStatements
 IndentWidth: 4
 ColumnLimit: 0
 
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:    '^<.*>'
+    Priority: 1
+  - Regex:    '^".*"'
+    Priority: 2
 # # Increase the cost of breaking after an assignment
 # PenaltyBreakAssignment: 100
 #

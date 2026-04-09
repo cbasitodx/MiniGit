@@ -1,5 +1,21 @@
 #include "plumbing/hash-content.h"
 
+#include <stdio.h>
+#include <string.h>
+
+#include "utils/read.h"
+
+#define EVP_SHA1_HASH_LENGTH 20
+
+#define HASH_CONTENT_MAX_ARGS 3
+#define OPTION_STD_IN "--stdin"
+#define OPTION_PATH "--path="
+#define OPTION_WRITE "-w"
+
+#define BLOB_READ_MODE "rb"
+#define BLOB_WRITE_MODE "wb"
+#define BLOB_FILE_DIRECTORY ".minigit/objects"
+
 /**
  * Write the git blob header to the beginning of the blob data.
  * If the reallocation fails, it is the responsibility of the caller to free the original blob data.

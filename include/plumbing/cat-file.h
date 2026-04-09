@@ -2,11 +2,9 @@
 #define CAT_FILE_H
 
 #include <stdbool.h>
-#include <string.h>
-#include <stdio.h>
 
 // TODO: This should agree with the one in hash-content.h,
-// find an idiomatic solution without importing hash-content.h??? 
+// find an idiomatic solution without importing hash-content.h???
 #define SHA1_HEX_LENGTH 40
 
 // TODO: Add more features. For now, we'll work exclusively with these 4 flags
@@ -23,7 +21,7 @@ typedef struct {
     bool opt_size;
     bool opt_exists;
     bool opt_print;
-    char* object;
+    char *object;
     bool object_is_hash;
 } CatFileArgs;
 

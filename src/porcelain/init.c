@@ -1,5 +1,10 @@
-#include "minigit.h"
 #include "porcelain/init.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "minigit.h"
 
 /**
  * Initializes a new minigit repository in the current directory.
