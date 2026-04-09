@@ -19,6 +19,10 @@
 #define OPTION_PATH "--path="
 #define OPTION_WRITE "-w"
 
+#define BLOB_READ_MODE "rb"
+#define BLOB_WRITE_MODE "wb"
+#define BLOB_FILE_DIRECTORY ".minigit/objects"
+
 typedef struct {
     bool write;
     bool use_stdin;

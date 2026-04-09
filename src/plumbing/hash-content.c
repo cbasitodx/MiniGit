@@ -1,6 +1,34 @@
 #include "plumbing/hash-content.h"
 
 /**
+ * Write the git blob header to the beginning of the blob data.
+ * If the reallocation fails, it is the responsibility of the caller to free the original blob data.
+ *
+ * @param blob The blob to write the header to.
+ *
+ * @return true if the header was successfully written, false otherwise.
+ */
+bool writeHeaderToBlob(Blob *blob) {
+    char header[HEADER_SIZE];
+    int header_len = snprintf(header, sizeof(header), "blob %zu", blob->size) + 1;
+
+    size_t new_size = header_len + blob->size;
+
+    uint8_t *temp = (uint8_t *)realloc(blob->data, new_size);
+    if (temp == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return false;
+    }
+    blob->data = temp;
+
+    memmove(blob->data + header_len, blob->data, blob->size);
+    memcpy(blob->data, header, header_len);
+    blob->size = new_size;
+
+    return true;
+}
+
+/**
  * Helper function for hashing blocks of data.
  *
  * @param data The raw bytes to hash.
@@ -9,7 +37,7 @@
  *
  * @return true if the hashing was successful, false otherwise.
  */
-bool hashBlob(const uint8_t *data, size_t len, uint8_t *out_hash) {
+bool hashBlob(Blob *blob, uint8_t *out_hash) {
     EVP_MD_CTX *ctx = NULL;
     const EVP_MD *md = NULL;
     unsigned int hash_len = 0;
@@ -29,12 +57,7 @@ bool hashBlob(const uint8_t *data, size_t len, uint8_t *out_hash) {
         return false;
     }
 
-    // Prepare and hash the Git header: "blob <size>\0"
-    char header[HEADER_SIZE];
-    int header_len = snprintf(header, sizeof(header), "blob %zu", len) + 1;
-
-    if (!EVP_DigestUpdate(ctx, header, header_len) ||
-        !EVP_DigestUpdate(ctx, data, len)) {
+    if (!EVP_DigestUpdate(ctx, blob->data, blob->size)) {
         EVP_MD_CTX_free(ctx);
         return false;
     }
@@ -48,6 +71,9 @@ bool hashBlob(const uint8_t *data, size_t len, uint8_t *out_hash) {
     // Clean up memory
     EVP_MD_CTX_free(ctx);
     return true;
+}
+
+bool writeHashToFile(Blob *blob, uint8_t *hash) {
 }
 
 void printHash(const uint8_t *hash) {
@@ -71,7 +97,8 @@ void hashContent(HashContentArgs *args) {
     blob = readData(file);
     uint8_t hash[EVP_SHA1_HASH_LENGTH];
 
-    if (!hashBlob(blob.data, blob.size, hash)) {
+    if (!writeHeaderToBlob(&blob) ||
+        !hashBlob(&blob, hash)) {
         fprintf(stderr, "Failed to hash data\n");
     }
 
