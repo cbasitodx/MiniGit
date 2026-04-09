@@ -1,8 +1,9 @@
 #include "minigit.h"
+#include "porcelain/init.h"
 
 int initRepo() {
     // Check if the minigit init directory is created
-    if (!opendir(MINIGIT_INIT_DIR)) {
+    if (opendir(MINIGIT_INIT_DIR)) {
         printf("This project already contains an initialized repo!\n");
         return -1;
     }

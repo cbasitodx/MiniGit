@@ -1,45 +1,42 @@
 #include "include/minigit.h"
-#include "include/parser.h"
+#include "plumbing.h"
+#include "porcelain.h"
 
 #define MINIGIT_NAME "minigit"
 
-int main() {
-    while (true) {
-        char **args = NULL;
-        int argc = parseMiniGitArgs(&args);
-        if (argc == -1) {
-            break;
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s <command> [<args>]\n", MINIGIT_NAME);
+        printf("\nRun '%s --help' for help with the use of minigit\n", MINIGIT_NAME);
+        return 0;
+    }
+
+    if (strcmp(argv[1], "init") == 0) {
+        initRepo();
+    }
+    else if (strcmp(argv[1], "hash-object") == 0) {
+        HashContentArgs hashContentArgs = {0};
+        if (!handleHashContentArgsFromCLI(argc, argv, &hashContentArgs)) {
+            return 0;
         }
 
-        if (argc == 0) {
-            free(args);
-            continue;
-        }
+        hashContent(&hashContentArgs);
+    }
+    else if (strcmp(argv[1], "cat-file") == 0) {
+        printf("placeholder");
+    }
 
-        // Check if we are in front of a minigit command...
-        // If we are not, just echo and go to the next iteration
-        if (strncmp(args[0], MINIGIT_NAME, strlen(MINIGIT_NAME)) != 0) {
-            for (int i = 0; i < argc; i++) {
-                fprintf(stdout, "%s", args[i]);
-                printf(" ");
-            }
-            printf("\n");
-            free(args);
-            continue;
-        }
 
-        // If we are, we now have to check which command we are running
-        if (argc == 1) {
-            printf("Run 'minigit --help' for help with the use of minigit\n");
-            continue;
-        }
+    else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
+        printf("usage: %s <command>\n\n", MINIGIT_NAME);
+        printf("Available commands:\n");
+        printf("   init          Create an empty minigit repository\n");
+        printf("   hash-object   Compute object ID and optionally creates a blob from a file\n");
+    }
 
-        if (strcmp(args[1], "init") == 0) {
-            initRepo();
-        }
-
-        // Always free when done
-        free(args);
+    else {
+        printf("minigit: '%s' is not a minigit command. See 'minigit --help'.\n", argv[1]);
+        return 1;
     }
 
     return 0;
