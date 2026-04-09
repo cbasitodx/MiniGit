@@ -1,5 +1,6 @@
 #include "include/minigit.h"
-#include "plumbing/hash-content.h"
+#include "plumbing.h"
+#include "porcelain.h"
 
 #define MINIGIT_NAME "minigit"
 
@@ -13,10 +14,13 @@ int main(int argc, char *argv[]) {
     if (strcmp(argv[1], "init") == 0) {
         initRepo();
     }
-
     else if (strcmp(argv[1], "hash-object") == 0) {
         hashContent(argc, argv);
     }
+    else if (strcmp(argv[1], "cat-file") == 0) {
+        printf("placeholder");
+    }
+
 
     else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
         printf("usage: %s <command>\n\n", MINIGIT_NAME);

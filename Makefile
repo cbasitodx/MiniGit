@@ -46,6 +46,14 @@ $(BUILD)/%.o: src/%.c | $(BUILD)
 $(BUILD)/%.o: src/plumbing/%.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Compile src/porcelain/*.c files into build/
+$(BUILD)/%.o: src/porcelain/%.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compile src/utils/*.c files into build/
+$(BUILD)/%.o: src/utils/%.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 # Create the build directory if it doesn't exist
 $(BUILD):
 	mkdir -p $(BUILD)

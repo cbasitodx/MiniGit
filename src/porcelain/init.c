@@ -1,4 +1,5 @@
 #include "minigit.h"
+#include "porcelain/init.h"
 
 int initRepo() {
     // Check if the minigit init directory is created

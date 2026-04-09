@@ -1,7 +1,7 @@
 #ifndef HASH_CONTENT_H
 #define HASH_CONTENT_H
 
-#include "read.h"
+#include "utils/read.h"
 
 #include <stdbool.h>
 #include <stdio.h>
