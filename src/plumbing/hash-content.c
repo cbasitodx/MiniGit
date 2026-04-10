@@ -6,8 +6,6 @@
 #include "utils/errors.h"
 #include "utils/read.h"
 
-#define EVP_SHA1_HASH_LENGTH 20
-
 #define HASH_CONTENT_MIN_ARGS 1
 #define HASH_CONTENT_MAX_ARGS 3
 #define HASH_CONTENT_COMMAND "hash-content"
@@ -114,7 +112,7 @@ int hashContent(HashContentArgs *args, mg_error_t *err) {
     } else {
         file = fopen(args->file_path, "rb");
         if (file == NULL) {
-            return mg_set_error(
+            return mgSetError(
                 err,
                 MG_ERR_FILE_OPEN_FAILED,
                 "Failed to open file: %s",
@@ -130,7 +128,7 @@ int hashContent(HashContentArgs *args, mg_error_t *err) {
     if (!writeHeaderToBlob(&blob) ||
         !hashBlob(&blob, hash)) {
         fclose(file);
-        return mg_set_error(
+        return mgSetError(
             err,
             MG_ERR_ALLOCATION_FAILED,
             "Failed to process blob data"
@@ -165,7 +163,7 @@ int hashContent(HashContentArgs *args, mg_error_t *err) {
  */
 int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args_out, mg_error_t *err) {
     if (argc == 2) {
-        return mg_set_error(
+        return mgSetError(
             err,
             MG_ERR_NOT_ENOUGH_ARGS,
             "%s requires at least %d argument",
@@ -175,7 +173,7 @@ int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args
     }
 
     if (argc > HASH_CONTENT_MAX_ARGS + 2) {
-        return mg_set_error(
+        return mgSetError(
             err,
             MG_ERR_TOO_MANY_ARGS,
             "%s accepts at most %d arguments",
@@ -195,7 +193,7 @@ int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args
 
             args_out->file_path = strdup(args_in[i] + start_index);
             if (args_out->file_path == NULL) {
-                return mg_set_error(
+                return mgSetError(
                     err,
                     MG_ERR_ALLOCATION_FAILED,
                     "Memory allocation failed for file path"
@@ -209,13 +207,13 @@ int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args
 
         else {
             free(args_out->file_path);
-            return mg_set_error(err, MG_ERR_UNKNOWN_OPTION, "Unknown option: %s", args_in[i]);
+            return mgSetError(err, MG_ERR_UNKNOWN_OPTION, "Unknown option: %s", args_in[i]);
         }
     }
 
     if (args_out->use_stdin && args_out->file_path != NULL) {
         free(args_out->file_path);
-        return mg_set_error(
+        return mgSetError(
             err,
             HC_STD_PATH_CONFLICT,
             "%s: cannot use both %s and %s options",
@@ -226,7 +224,7 @@ int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args
     }
 
     if (!args_out->use_stdin && args_out->file_path == NULL) {
-        return mg_set_error(
+        return mgSetError(
             err,
             MG_ERR_NOT_ENOUGH_ARGS,
             "%s requires either %s or %s option",

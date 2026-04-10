@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 
     else if (strcmp(argv[1], "hash-object") == 0) {
         HashContentArgs hashContentArgs = {0};
-        if (!handleHashContentArgsFromCLI(argc, argv, &hashContentArgs, &error)) {
+        if (handleHashContentArgsFromCLI(argc, argv, &hashContentArgs, &error) != 0) {
             return 0;
         }
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 
     else if (strcmp(argv[1], "cat-file") == 0) {
         CatFileArgs catFileArgs = {0};
-        if (!handleCatFileArgsFromCLI(argc, argv, &catFileArgs, &error)) {
+        if (handleCatFileArgsFromCLI(argc, argv, &catFileArgs, &error) != 0) {
             return 0;
         }
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     }
     else if (strcmp(argv[1], "rev-parse") == 0) {
         RevParseArgs revParseArgs = {0};
-        if (!handleRevParseArgsFromCLI(argc, argv, &revParseArgs, &error)) {
+        if (handleRevParseArgsFromCLI(argc, argv, &revParseArgs, &error) != 0) {
             return 0;
         }
 

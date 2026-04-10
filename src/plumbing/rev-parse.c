@@ -1,30 +1,31 @@
 #include "plumbing/rev-parse.h"
 
 #include "utils/errors.h"
+#include "plumbing/hash-content.h"
 
 #include <stdbool.h>
 #include <string.h>
-
-// TODO: This should agree with the one in hash-content.h,
-// find an idiomatic solution without importing hash-content.h??? 
-#define SHA1_HEX_LENGTH 40
+#include <dirent.h>
+#include <stdio.h>
 
 // TODO: Add more features. Adding more features means adding a variable number of arguments
 #define REV_PARSE_MAX_ARGS 1
 
-bool isValidHash(const char *str) {                                                    
-    if (strlen(str) != SHA1_HEX_LENGTH) return false;                                               
-    for (int i = 0; i < SHA1_HEX_LENGTH; i++) {
+#define SHA1_HASH_HEX_LENGTH EVP_SHA1_HASH_LENGTH * 2
+
+bool isValidHash(const char *str) {                                                   
+    if (strlen(str) != SHA1_HASH_HEX_LENGTH) return false;                                               
+    for (int i = 0; i < SHA1_HASH_HEX_LENGTH; i++) {
         if (!((str[i] >= '0' && str[i] <= '9') ||                                      
             (str[i] >= 'a' && str[i] <= 'f')))
             return false;                                                              
-    }           
+    }         
     return true;                                                                       
 }       
 
 int handleRevParseArgsFromCLI(int argc, char **args_in, RevParseArgs *args_out, mg_error_t *err) {
     if (argc < REV_PARSE_MAX_ARGS + 2) {
-        return mg_set_error(
+        return mgSetError(
             err,
             MG_ERR_NOT_ENOUGH_ARGS,
             "Not enough args [ERR MSG IN CONSTRUCTION]"
@@ -32,7 +33,7 @@ int handleRevParseArgsFromCLI(int argc, char **args_in, RevParseArgs *args_out, 
     }
 
     if (argc > REV_PARSE_MAX_ARGS + 2) {
-        return mg_set_error(
+        return mgSetError(
             err,
             MG_ERR_NOT_ENOUGH_ARGS,
             "Too many arguments [ERR MSG IN CONSTRUCTION]"
@@ -46,8 +47,70 @@ int handleRevParseArgsFromCLI(int argc, char **args_in, RevParseArgs *args_out, 
 
 int revParse(RevParseArgs *args, mg_error_t *err) {
     if(isValidHash(args->rev_name)) {
+        // Let's first check if the .minigit/ directory exists
+        if(opendir(".minigit") == NULL) {
+            return mgSetError(
+                err,
+                MG_ERR_DIR_OPEN_FAILED,
+                "minigit repository was not initialized. Please initialize it with 'minigit init'"
+            );
+        }
 
+        // Now check if the objects/ directory exists inside .minigit/
+        if(opendir(".minigit/objects") == NULL) {
+            return mgSetError(
+                err,
+                MG_ERR_DIR_OPEN_FAILED,
+                "minigit repository does not contains an objects directory."
+            );
+        }
+
+        // Separate the first two chars of the hash and then the remaining ones.
+        // Notice that we know the length (it's SHA1_HASH_HEX_LENGTH)
+        // (remember to append the end of string char. That's the reason behind the +1)
+        char firstTwoChars[2 + 1];
+        char remainingChars[(SHA1_HASH_HEX_LENGTH - 2) + 1];
+
+        strncpy(firstTwoChars, args->rev_name, 2);
+        strncpy(remainingChars, (args->rev_name + 2), SHA1_HASH_HEX_LENGTH - 2);
+
+        // Now we check if the directory .minigit/objects/{firstTwoChars} exists
+        size_t firstTwoCharsDirLen = strlen(".minigit/objects/") + 2 + 1;
+        char firstTwoCharsDir[firstTwoCharsDirLen];
+        sprintf(firstTwoCharsDir, "%s%s", ".minigit/objects/", firstTwoChars);
+
+        if(opendir(firstTwoCharsDir) == NULL) {
+            return mgSetError(
+                err,
+                MG_ERR_DIR_OPEN_FAILED,
+                "This is not an object of minigit objects database"
+            );
+        }
+
+        // Lastly, check if the object file exists
+        size_t objectFilePathLen = firstTwoCharsDirLen + 1 + strlen(remainingChars) + 1;
+        char objectFilePath[objectFilePathLen];
+        sprintf(objectFilePath, "%s/%s", firstTwoCharsDir, remainingChars);
+
+        FILE* objectFile = fopen(objectFilePath, "r");
+        if(objectFile == NULL) {
+            return mgSetError(
+                err,
+                MG_ERR_DIR_OPEN_FAILED,
+                "This is not an object of minigit objects database"
+            );
+        }
+
+        
     }
     
+    else {
+        return mgSetError(
+            err,
+            MG_ERR_GENERIC,
+            "rev-parse does not support symbolic names yet"
+        );
+    }
+
     return MG_SUCCESS;
 }

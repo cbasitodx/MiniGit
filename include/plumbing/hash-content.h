@@ -7,6 +7,7 @@
 
 #include "utils/errors.h"
 
+#define EVP_SHA1_HASH_LENGTH 20
 #define HEADER_SIZE 64
 
 typedef struct {

@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-int mg_set_error(mg_error_t *err, int code, const char *fmt, ...) {
+int mgSetError(mg_error_t *err, int code, const char *fmt, ...) {
     err->code = code;
 
     va_list args;
