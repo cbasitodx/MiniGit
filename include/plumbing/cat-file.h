@@ -1,6 +1,8 @@
 #ifndef CAT_FILE_H
 #define CAT_FILE_H
 
+#include "utils/errors.h"
+
 #include <stdbool.h>
 
 typedef struct {
@@ -11,7 +13,7 @@ typedef struct {
     char* object;
 } CatFileArgs;
 
-void catFile(CatFileArgs *args);
-bool handleCatFileArgsFromCLI(int argc, char **args_in, CatFileArgs *args_out);
+int catFile(CatFileArgs *args, mg_error_t *err);
+int handleCatFileArgsFromCLI(int argc, char **args_in, CatFileArgs *args_out, mg_error_t *err);
 
 #endif /* CAT_FILE_H */

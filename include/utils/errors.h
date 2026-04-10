@@ -10,9 +10,10 @@
 #define MG_ERR_ALLOCATION_FAILED 4
 #define MG_ERR_FILE_OPEN_FAILED 5
 
+#define MG_ERR_MESSAGE_BUF_SIZE 512
 typedef struct {
     int code;
-    char message[512];
+    char message[MG_ERR_MESSAGE_BUF_SIZE];
 } mg_error_t;
 
 int mg_set_error(mg_error_t *err, int code, const char *fmt, ...);
