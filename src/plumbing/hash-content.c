@@ -147,6 +147,8 @@ int hashContent(HashContentArgs *args, mg_error_t *err) {
 
     free(blob.data);
     fclose(file);
+
+    return MG_SUCCESS;
 }
 
 /**

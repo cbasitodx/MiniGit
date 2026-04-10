@@ -1,13 +1,19 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "plumbing/cat-file.h"
+#include "utils/errors.h"
+
 #include "plumbing/hash-content.h"
+#include "plumbing/cat-file.h"
+#include "plumbing/rev-parse.h"
+
 #include "porcelain/init.h"
 
 #define MINIGIT_NAME "minigit"
 
 int main(int argc, char *argv[]) {
+    mg_error_t error = {0}; // TODO: TEMPORAL PLACEHOLDER
+
     if (argc < 2) {
         printf("Usage: %s <command> [<args>]\n", MINIGIT_NAME);
         printf("\nRun '%s --help' for help with the use of minigit\n", MINIGIT_NAME);
@@ -20,28 +26,28 @@ int main(int argc, char *argv[]) {
 
     else if (strcmp(argv[1], "hash-object") == 0) {
         HashContentArgs hashContentArgs = {0};
-        if (!handleHashContentArgsFromCLI(argc, argv, &hashContentArgs)) {
+        if (!handleHashContentArgsFromCLI(argc, argv, &hashContentArgs, &error)) {
             return 0;
         }
 
-        hashContent(&hashContentArgs);
+        hashContent(&hashContentArgs, &error);
     }
 
     else if (strcmp(argv[1], "cat-file") == 0) {
         CatFileArgs catFileArgs = {0};
-        if (!handleCatFileArgsFromCLI(argc, argv, &catFileArgs)) {
+        if (!handleCatFileArgsFromCLI(argc, argv, &catFileArgs, &error)) {
             return 0;
         }
 
-        catFile(&catFileArgs);
+        catFile(&catFileArgs, &error);
     }
     else if (strcmp(argv[1], "rev-parse") == 0) {
         RevParseArgs revParseArgs = {0};
-        if (!handleRevParseArgsFromCLI(argc, argv, &revParseArgs)) {
+        if (!handleRevParseArgsFromCLI(argc, argv, &revParseArgs, &error)) {
             return 0;
         }
 
-        revParse(&revParseArgs);
+        revParse(&revParseArgs, &error);
     }
 
     else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {

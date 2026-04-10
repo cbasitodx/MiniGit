@@ -9,9 +9,8 @@
 // find an idiomatic solution without importing hash-content.h??? 
 #define SHA1_HEX_LENGTH 40
 
-// TODO: Add more features. For now, we'll work exclusively with these 4 flags
-// Adding more features means adding a variable number of arguments
-#define CAT_FILE_MAX_ARGS 2
+// TODO: Add more features. Adding more features means adding a variable number of arguments
+#define REV_PARSE_MAX_ARGS 1
 
 bool isValidHash(const char *str) {                                                    
     if (strlen(str) != SHA1_HEX_LENGTH) return false;                                               
@@ -24,9 +23,31 @@ bool isValidHash(const char *str) {
 }       
 
 int handleRevParseArgsFromCLI(int argc, char **args_in, RevParseArgs *args_out, mg_error_t *err) {
+    if (argc < REV_PARSE_MAX_ARGS + 2) {
+        return mg_set_error(
+            err,
+            MG_ERR_NOT_ENOUGH_ARGS,
+            "Not enough args [ERR MSG IN CONSTRUCTION]"
+        );
+    }
 
+    if (argc > REV_PARSE_MAX_ARGS + 2) {
+        return mg_set_error(
+            err,
+            MG_ERR_NOT_ENOUGH_ARGS,
+            "Too many arguments [ERR MSG IN CONSTRUCTION]"
+        );
+    }
+
+    args_out->rev_name = args_in[2];
+
+    return MG_SUCCESS;
 }
 
 int revParse(RevParseArgs *args, mg_error_t *err) {
+    if(isValidHash(args->rev_name)) {
 
+    }
+    
+    return MG_SUCCESS;
 }
