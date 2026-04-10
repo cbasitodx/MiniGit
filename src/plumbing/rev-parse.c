@@ -17,10 +17,10 @@ bool isValidHash(const char *str) {
     return true;                                                                       
 }       
 
-void revParse(RevParseArgs *args) {
-
-}
-
 bool handleRevParseArgsFromCLI(int argc, char **args_in, RevParseArgs *args_out) {
     return false;
+}
+
+void revParse(RevParseArgs *args) {
+
 }
