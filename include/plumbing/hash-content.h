@@ -8,6 +8,7 @@
 #include "utils/errors.h"
 
 #define HEADER_SIZE 64
+#define HASH_CONTENT_COMMAND "hash-content"
 
 typedef struct {
     bool write;

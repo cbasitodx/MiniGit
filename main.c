@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         initRepo();
     }
 
-    else if (strcmp(argv[1], "hash-object") == 0) {
+    else if (strcmp(argv[1], HASH_CONTENT_COMMAND) == 0) {
         HashContentArgs hashContentArgs = {0};
         if (!handleHashContentArgsFromCLI(argc, argv, &hashContentArgs, &error)) {
             return 0;

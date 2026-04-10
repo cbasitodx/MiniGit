@@ -10,7 +10,6 @@
 
 #define HASH_CONTENT_MIN_ARGS 1
 #define HASH_CONTENT_MAX_ARGS 3
-#define HASH_CONTENT_COMMAND "hash-content"
 #define OPTION_STD_IN "--stdin"
 #define OPTION_PATH "--path="
 #define OPTION_WRITE "-w"
