@@ -9,6 +9,7 @@
 
 #define EVP_SHA1_HASH_LENGTH 20
 #define HEADER_SIZE 64
+#define HASH_CONTENT_COMMAND "hash-content"
 
 typedef struct {
     bool write;

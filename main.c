@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "utils/errors.h"
-
-#include "plumbing/hash-content.h"
 #include "plumbing/cat-file.h"
+#include "plumbing/hash-content.h"
 #include "plumbing/rev-parse.h"
-
 #include "porcelain/init.h"
+#include "utils/errors.h"
 
 #define MINIGIT_NAME "minigit"
 
@@ -24,7 +22,7 @@ int main(int argc, char *argv[]) {
         initRepo();
     }
 
-    else if (strcmp(argv[1], "hash-object") == 0) {
+    else if (strcmp(argv[1], HASH_CONTENT_COMMAND) == 0) {
         HashContentArgs hashContentArgs = {0};
         if (handleHashContentArgsFromCLI(argc, argv, &hashContentArgs, &error) != 0) {
             return 0;
@@ -41,6 +39,7 @@ int main(int argc, char *argv[]) {
 
         catFile(&catFileArgs, &error);
     }
+
     else if (strcmp(argv[1], "rev-parse") == 0) {
         RevParseArgs revParseArgs = {0};
         if (handleRevParseArgsFromCLI(argc, argv, &revParseArgs, &error) != 0) {

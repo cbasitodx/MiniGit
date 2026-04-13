@@ -1,16 +1,16 @@
 #ifndef CAT_FILE_H
 #define CAT_FILE_H
 
-#include "utils/errors.h"
-
 #include <stdbool.h>
+
+#include "utils/errors.h"
 
 typedef struct {
     bool opt_type;
     bool opt_size;
     bool opt_exists;
     bool opt_print;
-    char* object;
+    char *object;
 } CatFileArgs;
 
 int catFile(CatFileArgs *args, mg_error_t *err);
