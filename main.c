@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
         printf("\nRun '%s --help' for help with the use of minigit\n", MINIGIT_NAME);
         return 0;
     }
-    
+
     if (strcmp(argv[1], "init") == 0) {
         initRepo();
     }
@@ -50,10 +50,14 @@ int main(int argc, char *argv[]) {
         // If everything went well, echo the hash
         // TODO: this could be multiple hashes. In the future we must acknowledge this...
         printf("%s\n", revParseArgs.rev_hash);
-        
+
         // Clean up shit
-        if(revParseArgs.file_ptr != NULL) { fclose(revParseArgs.file_ptr); } 
-        if(revParseArgs.rev_header != NULL) { free(revParseArgs.rev_header); }
+        if (revParseArgs.file_ptr != NULL) {
+            fclose(revParseArgs.file_ptr);
+        }
+        if (revParseArgs.rev_header != NULL) {
+            free(revParseArgs.rev_header);
+        }
     }
 
     else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {

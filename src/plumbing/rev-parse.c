@@ -1,32 +1,35 @@
 #include "plumbing/rev-parse.h"
 
-#include "utils/errors.h"
-#include "plumbing/hash-content.h"
-
-#include <stdbool.h>
-#include <string.h>
 #include <dirent.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include "plumbing/hash-content.h"
+#include "utils/errors.h"
 
 // TODO: Add more features. Adding more features means adding a variable number of arguments
 #define REV_PARSE_MAX_ARGS 1
 
 #define SHA1_HASH_HEX_LENGTH EVP_SHA1_HASH_LENGTH * 2
 
-bool isValidHash(const char *str) {                                                  
-    if (strlen(str) != SHA1_HASH_HEX_LENGTH) return false;                                   
+bool isValidHash(const char *str) {
+    if (strlen(str) != SHA1_HASH_HEX_LENGTH) {
+        return false;
+    }
     for (int i = 0; i < SHA1_HASH_HEX_LENGTH; i++) {
-        if (!((str[i] >= '0' && str[i] <= '9') ||                                      
-            (str[i] >= 'a' && str[i] <= 'f')))
-            return false;                                                              
-    }       
-    return true;                                                                       
-}       
+        if (!((str[i] >= '0' && str[i] <= '9') ||
+              (str[i] >= 'a' && str[i] <= 'f'))) {
+            return false;
+        }
+    }
+    return true;
+}
 
 int checkIfExistsHashFile(RevParseArgs *args, mg_error_t *err) {
     // Let's first check if the .minigit/ directory exists
-    if(opendir(".minigit") == NULL) {
+    if (opendir(".minigit") == NULL) {
         return mgSetError(
             err,
             MG_ERR_DIR_OPEN_FAILED,
@@ -35,7 +38,7 @@ int checkIfExistsHashFile(RevParseArgs *args, mg_error_t *err) {
     }
 
     // Now check if the objects/ directory exists inside .minigit/
-    if(opendir(".minigit/objects") == NULL) {
+    if (opendir(".minigit/objects") == NULL) {
         return mgSetError(
             err,
             MG_ERR_DIR_OPEN_FAILED,
@@ -57,7 +60,7 @@ int checkIfExistsHashFile(RevParseArgs *args, mg_error_t *err) {
     char firstTwoCharsDir[firstTwoCharsDirLen];
     sprintf(firstTwoCharsDir, "%s%s", ".minigit/objects/", firstTwoChars);
 
-    if(opendir(firstTwoCharsDir) == NULL) {
+    if (opendir(firstTwoCharsDir) == NULL) {
         return mgSetError(
             err,
             MG_ERR_DIR_OPEN_FAILED,
@@ -70,22 +73,23 @@ int checkIfExistsHashFile(RevParseArgs *args, mg_error_t *err) {
     char objectFilePath[objectFilePathLen];
     sprintf(objectFilePath, "%s/%s", firstTwoCharsDir, remainingChars);
 
-    FILE* objectFile = fopen(objectFilePath, "rb");
-    if(objectFile == NULL) {
+    FILE *objectFile = fopen(objectFilePath, "rb");
+    if (objectFile == NULL) {
         return mgSetError(
             err,
             MG_ERR_DIR_OPEN_FAILED,
             "This is not an object of minigit objects database"
         );
     }
-    
+
     // Read header up to first \0 into a dynamically growing buffer
     size_t headerCap = 64, headerLen = 0;
     char *headerBuf = malloc(headerCap);
     int c;
     while ((c = fgetc(objectFile)) != EOF && c != '\0') {
-        if (headerLen + 1 >= headerCap)
+        if (headerLen + 1 >= headerCap) {
             headerBuf = realloc(headerBuf, headerCap *= 2);
+        }
         headerBuf[headerLen++] = (char)c;
     }
     headerBuf[headerLen] = '\0';
@@ -124,10 +128,12 @@ int handleRevParseArgsFromCLI(int argc, char **args_in, RevParseArgs *args_out, 
 }
 
 int revParse(RevParseArgs *args, mg_error_t *err) {
-    if(isValidHash(args->rev_name)) {
-        if (checkIfExistsHashFile(args, err) != MG_SUCCESS) { return err->code; }
+    if (isValidHash(args->rev_name)) {
+        if (checkIfExistsHashFile(args, err) != MG_SUCCESS) {
+            return err->code;
+        }
     }
-    
+
     else {
         return mgSetError(
             err,

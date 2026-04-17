@@ -1,14 +1,13 @@
 #include "plumbing/cat-file.h"
 
-#include "utils/errors.h"
-#include "plumbing/rev-parse.h"
-
 #include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <string.h>
 #include <zlib.h> // TODO: Take this out of here
+
+#include "plumbing/rev-parse.h"
+#include "utils/errors.h"
 
 // TODO: Add more features. For now, we'll work exclusively with these 4 flags
 // Adding more features means adding a variable number of arguments
@@ -20,10 +19,10 @@
 #define OPTION_PRINT "-p"
 
 // TODO: Add some error handling to this function
-char* readTypeFromHeader(CatFileArgs *args, mg_error_t *err) {
-    char* obj_type = calloc(SOME_BIG_NUMBER, sizeof(char)); // TODO: change this crap
+char *readTypeFromHeader(CatFileArgs *args, mg_error_t *err) {
+    char *obj_type = calloc(SOME_BIG_NUMBER, sizeof(char)); // TODO: change this crap
     sscanf(args->object_header, "%s %*zu", obj_type);
-    
+
     return obj_type;
 }
 
@@ -31,7 +30,7 @@ char* readTypeFromHeader(CatFileArgs *args, mg_error_t *err) {
 size_t readSizeFromHeader(CatFileArgs *args, mg_error_t *err) {
     size_t obj_size;
     sscanf(args->object_header, "%*s %zu", &obj_size);
-    
+
     return obj_size;
 }
 
@@ -74,7 +73,7 @@ int handleCatFileArgsFromCLI(int argc, char **args_in, CatFileArgs *args_out, mg
     }
 
     args_out->object_name = args_in[3];
-    
+
     // Let's try to fill args_out->object_file
     RevParseArgs revParseArgs = {0};
     char *argv_rev_pase[] = {"minigit", "rev-parse", args_out->object_name};
@@ -82,32 +81,32 @@ int handleCatFileArgsFromCLI(int argc, char **args_in, CatFileArgs *args_out, mg
         return err->code;
     }
     revParse(&revParseArgs, err);
-    if(revParseArgs.file_ptr != NULL && revParseArgs.rev_hash != NULL && revParseArgs.rev_header != NULL) { 
-        args_out->object_file = revParseArgs.file_ptr; 
+    if (revParseArgs.file_ptr != NULL && revParseArgs.rev_hash != NULL && revParseArgs.rev_header != NULL) {
+        args_out->object_file = revParseArgs.file_ptr;
         args_out->object_hash = revParseArgs.rev_hash;
         args_out->object_header = revParseArgs.rev_header;
         args_out->object_exists = true;
     }
-    
+
     return MG_SUCCESS;
 }
 
 int catFile(CatFileArgs *args, mg_error_t *err) {
     if (args->opt_type) {
-        if(!args->object_exists) {
+        if (!args->object_exists) {
             return mgSetError(
                 err,
                 MG_ERR_GENERIC,
                 "Object does not exists"
             );
         }
-        char* object_type = readTypeFromHeader(args, err);
+        char *object_type = readTypeFromHeader(args, err);
         printf("The type is %s\n", object_type);
         free(object_type);
     }
 
     else if (args->opt_size) {
-        if(!args->object_exists) {
+        if (!args->object_exists) {
             return mgSetError(
                 err,
                 MG_ERR_GENERIC,
@@ -119,19 +118,22 @@ int catFile(CatFileArgs *args, mg_error_t *err) {
     }
 
     else if (args->opt_exists) {
-        if(args->object_exists) { printf("Object exists\n"); }
-        else { printf("Object does not exists\n"); }
+        if (args->object_exists) {
+            printf("Object exists\n");
+        } else {
+            printf("Object does not exists\n");
+        }
     }
 
     else if (args->opt_print) {
-        if(!args->object_exists) {
+        if (!args->object_exists) {
             return mgSetError(
                 err,
                 MG_ERR_GENERIC,
                 "Object does not exists"
             );
         }
-        
+
         // TODO: Take this out of the function
         // @joaquin pleeeeease make a decompressing function :(
 
@@ -148,9 +150,9 @@ int catFile(CatFileArgs *args, mg_error_t *err) {
         unsigned char *decompressed = malloc(decompressed_size);
 
         z_stream s = {0};
-        s.next_in   = compressed;
-        s.avail_in  = compressed_size;
-        s.next_out  = decompressed;
+        s.next_in = compressed;
+        s.avail_in = compressed_size;
+        s.next_out = decompressed;
         s.avail_out = decompressed_size;
 
         inflateInit(&s);
@@ -162,13 +164,15 @@ int catFile(CatFileArgs *args, mg_error_t *err) {
         fwrite(decompressed, 1, decompressed_size, stdout);
         free(decompressed);
 
-        // char line[1024];                                                                                                                                                                                   
+        // char line[1024];
         // while (fgets(line, sizeof(line), args->object_file))
-        // fputs(line, stdout); 
+        // fputs(line, stdout);
     }
 
     // Clean up shit
-    if(args->object_file != NULL) { fclose(args->object_file); } 
+    if (args->object_file != NULL) {
+        fclose(args->object_file);
+    }
 
     return MG_SUCCESS;
 }
