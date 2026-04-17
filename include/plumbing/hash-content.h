@@ -1,27 +1,15 @@
 #ifndef HASH_CONTENT_H
 #define HASH_CONTENT_H
 
-#include "utils/read.h"
-
+#include <openssl/evp.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
-#include <openssl/evp.h>
+#include "utils/errors.h"
 
-#define HEADER_SIZE 64
 #define EVP_SHA1_HASH_LENGTH 20
-
-#define HASH_CONTENT_MAX_ARGS 3
-#define OPTION_STD_IN "--stdin"
-#define OPTION_PATH "--path="
-#define OPTION_WRITE "-w"
-
-#define BLOB_READ_MODE "rb"
-#define BLOB_WRITE_MODE "wb"
-#define BLOB_FILE_DIRECTORY ".minigit/objects"
+#define HEADER_SIZE 64
+#define HASH_CONTENT_COMMAND "hash-content"
 
 typedef struct {
     bool write;
@@ -29,7 +17,7 @@ typedef struct {
     char *file_path;
 } HashContentArgs;
 
-void hashContent(HashContentArgs *args);
-bool handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args_out);
+int hashContent(HashContentArgs *args, mg_error_t *err);
+int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args_out, mg_error_t *err);
 
 #endif /* HASH_CONTENT_H */

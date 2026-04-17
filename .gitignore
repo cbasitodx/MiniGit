@@ -2,3 +2,4 @@ minigit
 build/
 .vscode/
 .minigit/
+/compile_commands.json

@@ -1,7 +1,7 @@
 # Compiler and flags
 CC      = gcc
 CFLAGS  = $(shell cat compile_flags.txt)
-LDFLAGS = -lcrypto
+LDFLAGS = -lcrypto -lz
 
 # macOS: OpenSSL is keg-only, so the headers and libs aren't on the default path
 ifeq ($(shell uname), Darwin)
