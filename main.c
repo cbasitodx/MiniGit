@@ -1,45 +1,77 @@
-#include "include/minigit.h"
-#include "include/parser.h"
+#include <stdio.h>
+#include <string.h>
+
+#include "plumbing/cat-file.h"
+#include "plumbing/hash-content.h"
+#include "plumbing/rev-parse.h"
+#include "porcelain/init.h"
+#include "utils/errors.h"
 
 #define MINIGIT_NAME "minigit"
 
-int main() {
-    while (true) {
-        char **args = NULL;
-        int argc = parseMiniGitArgs(&args);
-        if (argc == -1) {
-            break;
+int main(int argc, char *argv[]) {
+    mg_error_t error = {0}; // TODO: TEMPORAL PLACEHOLDER
+
+    if (argc < 2) {
+        printf("Usage: %s <command> [<args>]\n", MINIGIT_NAME);
+        printf("\nRun '%s --help' for help with the use of minigit\n", MINIGIT_NAME);
+        return 0;
+    }
+
+    if (strcmp(argv[1], "init") == 0) {
+        initRepo();
+    }
+
+    else if (strcmp(argv[1], HASH_CONTENT_COMMAND) == 0) {
+        HashContentArgs hashContentArgs = {0};
+        if (handleHashContentArgsFromCLI(argc, argv, &hashContentArgs, &error) != 0) {
+            return 0;
         }
 
-        if (argc == 0) {
-            free(args);
-            continue;
+        hashContent(&hashContentArgs, &error);
+    }
+
+    else if (strcmp(argv[1], "cat-file") == 0) {
+        CatFileArgs catFileArgs = {0};
+        if (handleCatFileArgsFromCLI(argc, argv, &catFileArgs, &error) != 0) {
+            return 0;
         }
 
-        // Check if we are in front of a minigit command...
-        // If we are not, just echo and go to the next iteration
-        if (strncmp(args[0], MINIGIT_NAME, strlen(MINIGIT_NAME)) != 0) {
-            for (int i = 0; i < argc; i++) {
-                fprintf(stdout, "%s", args[i]);
-                printf(" ");
-            }
-            printf("\n");
-            free(args);
-            continue;
+        catFile(&catFileArgs, &error);
+    }
+
+    else if (strcmp(argv[1], "rev-parse") == 0) {
+        RevParseArgs revParseArgs = {0};
+        if (handleRevParseArgsFromCLI(argc, argv, &revParseArgs, &error) != 0) {
+            return 0;
         }
 
-        // If we are, we now have to check which command we are running
-        if (argc == 1) {
-            printf("Run 'minigit --help' for help with the use of minigit\n");
-            continue;
-        }
+        revParse(&revParseArgs, &error);
+        // If everything went well, echo the hash
+        // TODO: this could be multiple hashes. In the future we must acknowledge this...
+        printf("%s\n", revParseArgs.rev_hash);
 
-        if (strcmp(args[1], "init") == 0) {
-            initRepo();
+        // Clean up shit
+        if (revParseArgs.file_ptr != NULL) {
+            fclose(revParseArgs.file_ptr);
         }
+        if (revParseArgs.rev_header != NULL) {
+            free(revParseArgs.rev_header);
+        }
+    }
 
-        // Always free when done
-        free(args);
+    else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
+        printf("usage: %s <command>\n\n", MINIGIT_NAME);
+        printf("Available commands:\n");
+        printf("   init          Create an empty minigit repository\n");
+        printf("   hash-object   Compute object ID and optionally creates a blob from a file\n");
+        printf("   cat-file      something something\n");
+        printf("   rev-parse     something something\n");
+    }
+
+    else {
+        printf("minigit: '%s' is not a minigit command. See 'minigit --help'.\n", argv[1]);
+        return 1;
     }
 
     return 0;

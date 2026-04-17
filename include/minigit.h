@@ -3,10 +3,7 @@
 
 #include <dirent.h>
 #include <sys/stat.h>
-#include <stdio.h>
 #include <unistd.h>
-#include <string.h>
-#include <stdlib.h>
 
 #define MINIGIT_INIT_DIR ".minigit"
 
@@ -15,7 +12,5 @@
 
 #define MINIGIT_INIT_FILES_COUNT 3
 #define MINIGIT_INIT_FILES "config", "description", "HEAD"
-
-int initRepo();
 
 #endif /* MINIGIT_H */
