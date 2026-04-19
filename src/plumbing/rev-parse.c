@@ -114,7 +114,7 @@ int handleRevParseArgsFromCLI(int argc, char **args_in, RevParseArgs *args_out, 
     if (argc > REV_PARSE_MAX_ARGS + 2) {
         return mgSetError(
             err,
-            MG_ERR_NOT_ENOUGH_ARGS,
+            MG_ERR_TOO_MANY_ARGS,
             "Too many arguments [ERR MSG IN CONSTRUCTION]"
         );
     }

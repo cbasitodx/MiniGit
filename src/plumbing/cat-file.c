@@ -46,7 +46,7 @@ int handleCatFileArgsFromCLI(int argc, char **args_in, CatFileArgs *args_out, mg
     if (argc > CAT_FILE_MAX_ARGS + 2) {
         return mgSetError(
             err,
-            MG_ERR_NOT_ENOUGH_ARGS,
+            MG_ERR_TOO_MANY_ARGS,
             "Too many arguments [ERR MSG IN CONSTRUCTION]"
         );
     }
