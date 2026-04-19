@@ -24,11 +24,9 @@ int main(int argc, char *argv[]) {
 
     else if (strcmp(argv[1], HASH_CONTENT_COMMAND) == 0) {
         HashContentArgs hashContentArgs = {0};
-        if (!handleHashContentArgsFromCLI(argc, argv, &hashContentArgs, &error)) {
-            return 0;
+        if (handleHashContentArgsFromCLI(argc, argv, &hashContentArgs, &error) == 0) {
+            hashContent(&hashContentArgs, &error);
         }
-
-        hashContent(&hashContentArgs, &error);
     }
 
     else if (strcmp(argv[1], "cat-file") == 0) {
