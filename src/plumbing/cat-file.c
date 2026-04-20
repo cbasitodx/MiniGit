@@ -20,7 +20,7 @@
 
 // TODO: Add some error handling to this function
 char *readTypeFromHeader(CatFileArgs *args, mg_error_t *err) {
-    char *obj_type = calloc(SOME_BIG_NUMBER, sizeof(char)); // TODO: change this crap
+    char *obj_type = calloc(SOME_BIG_NUMBER, sizeof(char)); // TODO: change this
     sscanf(args->object_header, "%s %*zu", obj_type);
 
     return obj_type;
@@ -34,6 +34,19 @@ size_t readSizeFromHeader(CatFileArgs *args, mg_error_t *err) {
     return obj_size;
 }
 
+/**
+ * Parse command-line arguments for the cat-file command and store the results
+ * in a CatFileArgs struct. Internally calls rev-parse to resolve the object name
+ * to a hash and open the corresponding object file.
+ * It is the responsibility of the caller to close args_out->object_file if it is set.
+ *
+ * @param argc     The number of command-line arguments.
+ * @param args_in  The array of command-line arguments.
+ * @param args_out The output struct to store the parsed arguments.
+ * @param err      Output error struct populated on failure.
+ *
+ * @return MG_SUCCESS on success, non-zero error code otherwise.
+ */
 int handleCatFileArgsFromCLI(int argc, char **args_in, CatFileArgs *args_out, mg_error_t *err) {
     if (argc < CAT_FILE_MAX_ARGS + 2) {
         return mgSetError(
@@ -91,6 +104,16 @@ int handleCatFileArgsFromCLI(int argc, char **args_in, CatFileArgs *args_out, mg
     return MG_SUCCESS;
 }
 
+/**
+ * Execute the cat-file command based on the flags set in args.
+ * Prints the object type (-t), size (-s), existence (-e), or raw content (-p)
+ * depending on which option flag is set. Closes args->object_file before returning.
+ *
+ * @param args Populated CatFileArgs struct with option flags and resolved object data.
+ * @param err  Output error struct populated on failure.
+ *
+ * @return MG_SUCCESS on success, non-zero error code otherwise.
+ */
 int catFile(CatFileArgs *args, mg_error_t *err) {
     if (args->opt_type) {
         if (!args->object_exists) {
@@ -169,7 +192,7 @@ int catFile(CatFileArgs *args, mg_error_t *err) {
         // fputs(line, stdout);
     }
 
-    // Clean up shit
+    // Clean up
     if (args->object_file != NULL) {
         fclose(args->object_file);
     }

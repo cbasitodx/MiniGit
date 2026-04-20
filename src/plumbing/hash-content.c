@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "minigit.h"
 #include "utils/errors.h"
 #include "utils/read.h"
 
@@ -14,7 +15,7 @@
 
 #define BLOB_READ_MODE "rb"
 #define BLOB_WRITE_MODE "wb"
-#define BLOB_FILE_DIRECTORY ".minigit/objects"
+#define BLOB_FILE_DIRECTORY MINIGIT_OBJECTS_PATH
 
 #define HC_STD_PATH_CONFLICT 100
 
@@ -109,7 +110,7 @@ int hashContent(HashContentArgs *args, mg_error_t *err) {
     if (args->use_stdin) {
         file = stdin;
     } else {
-        file = fopen(args->file_path, "rb");
+        file = fopen(args->file_path, BLOB_READ_MODE);
         if (file == NULL) {
             return mgSetError(
                 err,

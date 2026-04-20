@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
         // TODO: this could be multiple hashes. In the future we must acknowledge this...
         printf("%s\n", revParseArgs.rev_hash);
 
-        // Clean up shit
+        // Clean up
         if (revParseArgs.file_ptr != NULL) {
             fclose(revParseArgs.file_ptr);
         }

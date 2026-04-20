@@ -6,7 +6,7 @@
 
 #include "utils/errors.h"
 
-#define SOME_BIG_NUMBER 1024 // TODO: change this crap
+#define SOME_BIG_NUMBER 1024 // TODO: change this
 
 typedef struct {
     bool opt_type;
