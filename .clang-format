@@ -1,8 +1,7 @@
----
-Language:        C
+Language: Cpp
 
 # Standard Model
-BasedOnStyle:  LLVM
+BasedOnStyle: LLVM
 
 # So braces are in the same line as the if, else, while, etc
 BreakBeforeBraces: Attach
@@ -16,12 +15,14 @@ SpaceBeforeParens: ControlStatements
 IndentWidth: 4
 ColumnLimit: 0
 
-# # Increase the cost of breaking after an assignment
-# PenaltyBreakAssignment: 100
-#
-# # Ensure operands (like your two strlen calls) stay vertically aligned
-# AlignOperands: Align
-#
-# # Set this to 'None' if you want the '+' to stay at the end of the line
-# # Set to 'All' if you want the '+' to move to the start of the next line
-# BreakBeforeBinaryOperators: None
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:    '^<.*>'
+    Priority: 1
+  - Regex:    '^".*"'
+    Priority: 2
+
+# Force closing parenthesis to a new line on wrapped function calls
+AlignAfterOpenBracket: BlockIndent
+BinPackArguments: false
