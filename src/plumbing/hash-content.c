@@ -1,21 +1,20 @@
 #include "plumbing/hash-content.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 
-#include "minigit.h"
+#include "utils/compress.h"
 #include "utils/errors.h"
 #include "utils/read.h"
+#include "utils/write.h"
 
 #define HASH_CONTENT_MIN_ARGS 1
 #define HASH_CONTENT_MAX_ARGS 3
 #define OPTION_STD_IN "--stdin"
 #define OPTION_PATH "--path="
 #define OPTION_WRITE "-w"
-
-#define BLOB_READ_MODE "rb"
-#define BLOB_WRITE_MODE "wb"
-#define BLOB_FILE_DIRECTORY MINIGIT_OBJECTS_PATH
 
 #define HC_STD_PATH_CONFLICT 100
 
@@ -35,7 +34,6 @@ bool writeHeaderToBlob(Blob *blob) {
 
     uint8_t *temp = (uint8_t *)realloc(blob->data, new_size);
     if (temp == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
         return false;
     }
     blob->data = temp;
@@ -92,10 +90,95 @@ bool hashBlob(Blob *blob, uint8_t *out_hash) {
     return true;
 }
 
-bool writeHashToFile(Blob *blob, uint8_t *hash) {
-    return false;
+/**
+ * Writes the encrypted blob data (with header) to a file in the .minigit/objects directory named after the hash.
+ * Will create the .minigit/objects/xx/ directory with the first two characters of the hash if it doesn't exist.
+ * Will create the .minigit/objects/xx/yyy... file with the remaining characters of the hash.
+ *
+ * @param blob The blob to write to the file.
+ * @param hash The hash of the blob.
+ * @param err The error struct to populate in case of an error.
+ *
+ * @return true if the blob was successfully written to the file, false otherwise.
+ */
+bool saveHashContent(Blob *blob, uint8_t *hash, mg_error_t *err) {
+    size_t directory_len = strlen(BLOB_FILE_DIRECTORY) + strlen("/xx/") + 1;
+    char directory_path[directory_len];
+    snprintf(directory_path, directory_len, "%s/%02x/", BLOB_FILE_DIRECTORY, hash[0]);
+
+    if (createDir(directory_path, 0755, true, err) != MG_SUCCESS) {
+        mgSetError(
+            err,
+            MG_ERR_DIR_CREATION_FAILED,
+            "Failed to create directory %s with error %s",
+            directory_path,
+            strerror(errno)
+        );
+        return false;
+    }
+
+    // Directory + hash len (20 bytes) * 2 for hex - 2 for the first two characters + 1 for null terminator
+    size_t file_path_len = directory_len + EVP_SHA1_HASH_LENGTH * 2 - 2 + 1;
+    char file_path[file_path_len];
+    int offset = snprintf(file_path, file_path_len, "%s", directory_path);
+    for (int i = 1; i < EVP_SHA1_HASH_LENGTH; i++) {
+        offset += snprintf(file_path + offset, file_path_len - offset, "%02x", hash[i]);
+    }
+
+    Blob compressed_blob = {0};
+    if (prepare_compress_blob(blob, &compressed_blob) != 0) {
+        mgSetError(
+            err,
+            MG_ERR_ALLOCATION_FAILED,
+            "Memory allocation failed for compressed blob"
+        );
+        return false;
+    }
+
+    if (compress_blob(blob, &compressed_blob) != 0) {
+        free(compressed_blob.data);
+        mgSetError(
+            err,
+            MG_ERR_ALLOCATION_FAILED,
+            "Failed to compress blob data"
+        );
+        return false;
+    }
+
+    FILE *file = fopen(file_path, BLOB_WRITE_MODE);
+    if (file == NULL) {
+        free(compressed_blob.data);
+        mgSetError(
+            err,
+            MG_ERR_FILE_OPEN_FAILED,
+            "Failed to open file for writing: %s",
+            file_path
+        );
+        return false;
+    }
+    size_t written = fwrite(compressed_blob.data, 1, compressed_blob.size, file);
+    if (written != compressed_blob.size) {
+        free(compressed_blob.data);
+        fclose(file);
+        mgSetError(
+            err,
+            MG_ERR_FILE_OPEN_FAILED,
+            "Failed to write complete blob data to file: %s",
+            file_path
+        );
+        return false;
+    }
+
+    fclose(file);
+    free(compressed_blob.data);
+    return true;
 }
 
+/**
+ * Prints the hash in hexadecimal format to stdout.
+ *
+ * @param hash The hash to print (must be at least EVP_SHA1_HASH_LENGTH bytes).
+ */
 void printHash(const uint8_t *hash) {
     for (int i = 0; i < EVP_SHA1_HASH_LENGTH; i++) {
         printf("%02x", hash[i]);
@@ -103,6 +186,16 @@ void printHash(const uint8_t *hash) {
     printf("\n");
 }
 
+/**
+ * Hash Content implmentation.
+ * Reads the content from a file or stdin, writes the git blob header, computes the hash,
+ * and optionally writes the blob to the .minigit/objects directory.
+ *
+ * @param args The arguments for the hash content operation. Will free file_path if set.
+ * @param err The error struct to populate in case of an error.
+ *
+ * @return 0 if successful, non-zero if there's an error.
+ */
 int hashContent(HashContentArgs *args, mg_error_t *err) {
     Blob blob = {0};
     FILE *file = NULL;
@@ -140,7 +233,7 @@ int hashContent(HashContentArgs *args, mg_error_t *err) {
     }
 
     if (args->write) {
-        printf("Write functionality is not implemented yet\n");
+        saveHashContent(&blob, hash, err);
     }
 
     free(blob.data);

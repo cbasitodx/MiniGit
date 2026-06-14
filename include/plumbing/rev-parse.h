@@ -1,13 +1,9 @@
 #ifndef REV_PARSE_H
 #define REV_PARSE_H
 
-#include <stdbool.h>
 #include <stdio.h>
 
 #include "utils/errors.h"
-
-// TODO: TAKE THIS AND MAKE IT INTO A PARSER THAT CAN BE USED BY cat-file AND rev-parse.
-// THIS IS THE WAY git DOES IT.
 
 typedef struct {
     FILE *file_ptr; // whoever uses this is responsible of closing it...
