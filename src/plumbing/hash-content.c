@@ -10,17 +10,11 @@
 #include "utils/read.h"
 #include "utils/write.h"
 
-#define EVP_SHA1_HASH_LENGTH 20
-
 #define HASH_CONTENT_MIN_ARGS 1
 #define HASH_CONTENT_MAX_ARGS 3
 #define OPTION_STD_IN "--stdin"
 #define OPTION_PATH "--path="
 #define OPTION_WRITE "-w"
-
-#define BLOB_READ_MODE "rb"
-#define BLOB_WRITE_MODE "wb"
-#define BLOB_FILE_DIRECTORY ".minigit/objects"
 
 #define HC_STD_PATH_CONFLICT 100
 
@@ -113,12 +107,12 @@ bool saveHashContent(Blob *blob, uint8_t *hash, mg_error_t *err) {
     snprintf(directory_path, directory_len, "%s/%02x/", BLOB_FILE_DIRECTORY, hash[0]);
 
     if (createDir(directory_path, 0755, true, err) != MG_SUCCESS) {
-        mg_set_error(
+        mgSetError(
             err,
             MG_ERR_DIR_CREATION_FAILED,
             "Failed to create directory %s with error %s",
             directory_path,
-            errno
+            strerror(errno)
         );
         return false;
     }
@@ -133,7 +127,7 @@ bool saveHashContent(Blob *blob, uint8_t *hash, mg_error_t *err) {
 
     Blob compressed_blob = {0};
     if (prepare_compress_blob(blob, &compressed_blob) != 0) {
-        mg_set_error(
+        mgSetError(
             err,
             MG_ERR_ALLOCATION_FAILED,
             "Memory allocation failed for compressed blob"
@@ -143,7 +137,7 @@ bool saveHashContent(Blob *blob, uint8_t *hash, mg_error_t *err) {
 
     if (compress_blob(blob, &compressed_blob) != 0) {
         free(compressed_blob.data);
-        mg_set_error(
+        mgSetError(
             err,
             MG_ERR_ALLOCATION_FAILED,
             "Failed to compress blob data"
@@ -154,7 +148,7 @@ bool saveHashContent(Blob *blob, uint8_t *hash, mg_error_t *err) {
     FILE *file = fopen(file_path, BLOB_WRITE_MODE);
     if (file == NULL) {
         free(compressed_blob.data);
-        mg_set_error(
+        mgSetError(
             err,
             MG_ERR_FILE_OPEN_FAILED,
             "Failed to open file for writing: %s",
@@ -166,7 +160,7 @@ bool saveHashContent(Blob *blob, uint8_t *hash, mg_error_t *err) {
     if (written != compressed_blob.size) {
         free(compressed_blob.data);
         fclose(file);
-        mg_set_error(
+        mgSetError(
             err,
             MG_ERR_FILE_OPEN_FAILED,
             "Failed to write complete blob data to file: %s",
@@ -209,9 +203,9 @@ int hashContent(HashContentArgs *args, mg_error_t *err) {
     if (args->use_stdin) {
         file = stdin;
     } else {
-        file = fopen(args->file_path, "rb");
+        file = fopen(args->file_path, BLOB_READ_MODE);
         if (file == NULL) {
-            return mg_set_error(
+            return mgSetError(
                 err,
                 MG_ERR_FILE_OPEN_FAILED,
                 "Failed to open file: %s",
@@ -227,7 +221,7 @@ int hashContent(HashContentArgs *args, mg_error_t *err) {
     if (!writeHeaderToBlob(&blob) ||
         !hashBlob(&blob, hash)) {
         fclose(file);
-        return mg_set_error(
+        return mgSetError(
             err,
             MG_ERR_ALLOCATION_FAILED,
             "Failed to process blob data"
@@ -262,7 +256,7 @@ int hashContent(HashContentArgs *args, mg_error_t *err) {
  */
 int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args_out, mg_error_t *err) {
     if (argc == 2) {
-        return mg_set_error(
+        return mgSetError(
             err,
             MG_ERR_NOT_ENOUGH_ARGS,
             "%s requires at least %d argument",
@@ -272,7 +266,7 @@ int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args
     }
 
     if (argc > HASH_CONTENT_MAX_ARGS + 2) {
-        return mg_set_error(
+        return mgSetError(
             err,
             MG_ERR_TOO_MANY_ARGS,
             "%s accepts at most %d arguments",
@@ -292,7 +286,7 @@ int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args
 
             args_out->file_path = strdup(args_in[i] + start_index);
             if (args_out->file_path == NULL) {
-                return mg_set_error(
+                return mgSetError(
                     err,
                     MG_ERR_ALLOCATION_FAILED,
                     "Memory allocation failed for file path"
@@ -306,13 +300,13 @@ int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args
 
         else {
             free(args_out->file_path);
-            return mg_set_error(err, MG_ERR_UNKNOWN_OPTION, "Unknown option: %s", args_in[i]);
+            return mgSetError(err, MG_ERR_UNKNOWN_OPTION, "Unknown option: %s", args_in[i]);
         }
     }
 
     if (args_out->use_stdin && args_out->file_path != NULL) {
         free(args_out->file_path);
-        return mg_set_error(
+        return mgSetError(
             err,
             HC_STD_PATH_CONFLICT,
             "%s: cannot use both %s and %s options",
@@ -323,7 +317,7 @@ int handleHashContentArgsFromCLI(int argc, char **args_in, HashContentArgs *args
     }
 
     if (!args_out->use_stdin && args_out->file_path == NULL) {
-        return mg_set_error(
+        return mgSetError(
             err,
             MG_ERR_NOT_ENOUGH_ARGS,
             "%s requires either %s or %s option",

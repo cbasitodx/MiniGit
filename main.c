@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "plumbing/cat-file.h"
@@ -24,14 +25,16 @@ int main(int argc, char *argv[]) {
 
     else if (strcmp(argv[1], HASH_CONTENT_COMMAND) == 0) {
         HashContentArgs hashContentArgs = {0};
-        if (handleHashContentArgsFromCLI(argc, argv, &hashContentArgs, &error) == 0) {
-            hashContent(&hashContentArgs, &error);
+        if (handleHashContentArgsFromCLI(argc, argv, &hashContentArgs, &error) != 0) {
+            return 0;
         }
+
+        hashContent(&hashContentArgs, &error);
     }
 
     else if (strcmp(argv[1], "cat-file") == 0) {
         CatFileArgs catFileArgs = {0};
-        if (!handleCatFileArgsFromCLI(argc, argv, &catFileArgs, &error)) {
+        if (handleCatFileArgsFromCLI(argc, argv, &catFileArgs, &error) != 0) {
             return 0;
         }
 
@@ -40,11 +43,22 @@ int main(int argc, char *argv[]) {
 
     else if (strcmp(argv[1], "rev-parse") == 0) {
         RevParseArgs revParseArgs = {0};
-        if (!handleRevParseArgsFromCLI(argc, argv, &revParseArgs, &error)) {
+        if (handleRevParseArgsFromCLI(argc, argv, &revParseArgs, &error) != 0) {
             return 0;
         }
 
         revParse(&revParseArgs, &error);
+        // If everything went well, echo the hash
+        // TODO: this could be multiple hashes. In the future we must acknowledge this...
+        printf("%s\n", revParseArgs.rev_hash);
+
+        // Clean up
+        if (revParseArgs.file_ptr != NULL) {
+            fclose(revParseArgs.file_ptr);
+        }
+        if (revParseArgs.rev_header != NULL) {
+            free(revParseArgs.rev_header);
+        }
     }
 
     else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
