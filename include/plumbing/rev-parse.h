@@ -3,7 +3,6 @@
 
 #include "utils/errors.h"
 
-#include <stdbool.h>
 
 typedef struct {
     char *rev_name;
