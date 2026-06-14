@@ -1,6 +1,20 @@
-#include "minigit.h"
 #include "porcelain/init.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "minigit.h"
+
+/**
+ * Initializes a new minigit repository in the current directory.
+ *
+ * Creates the .minigit directory along with all required subdirectories
+ * and files defined by MINIGIT_INIT_DIRS and MINIGIT_INIT_FILES.
+ * If any step fails, it attempts to clean up by removing the root directory.
+ *
+ * @return 0 on success, -1 if the repo already exists or any creation step fails.
+ */
 int initRepo() {
     // Check if the minigit init directory is created
     if (opendir(MINIGIT_INIT_DIR)) {

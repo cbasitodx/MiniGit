@@ -1,5 +1,11 @@
 #include "utils/read.h"
 
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define CHUNK_SIZE 4096
+
 void growBuffer(uint8_t **data, size_t *capacity) {
     (*capacity) += CHUNK_SIZE;
     uint8_t *temp = (uint8_t *)realloc(*data, (*capacity) * sizeof(uint8_t));
