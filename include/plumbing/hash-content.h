@@ -13,6 +13,10 @@
 #define HEADER_SIZE 64
 #define HASH_CONTENT_COMMAND "hash-content"
 
+#define BLOB_READ_MODE "rb"
+#define BLOB_WRITE_MODE "wb"
+#define BLOB_FILE_DIRECTORY ".minigit/objects"
+
 typedef struct {
     bool write;
     bool use_stdin;
