@@ -53,7 +53,10 @@ int checkIfExistsHashFile(RevParseArgs *args, mg_error_t *err) {
     char remainingChars[(SHA1_HASH_HEX_LENGTH - SHA1_DIR_PREFIX_LEN) + 1];
 
     strncpy(firstTwoChars, args->rev_name, SHA1_DIR_PREFIX_LEN);
+    firstTwoChars[SHA1_DIR_PREFIX_LEN] = '\0';
+
     strncpy(remainingChars, (args->rev_name + SHA1_DIR_PREFIX_LEN), SHA1_HASH_HEX_LENGTH - SHA1_DIR_PREFIX_LEN);
+    remainingChars[SHA1_HASH_HEX_LENGTH - SHA1_DIR_PREFIX_LEN] = '\0';
 
     // Now we check if the directory .minigit/objects/{firstTwoChars} exists
     size_t firstTwoCharsDirLen = strlen(MINIGIT_OBJECTS_PATH "/") + SHA1_DIR_PREFIX_LEN + 1;
