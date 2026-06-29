@@ -62,14 +62,26 @@ int initRepo() {
 
         // Create the path string
         snprintf(path, pathLength, "%s/%s", MINIGIT_INIT_DIR, fileNames[i]);
-        if (fopen(path, "w") == NULL) {
+        FILE *f = fopen(path, "w");
+        if (f == NULL) {
             rmdir(MINIGIT_INIT_DIR); // Try to remove if something fails...
             free(path);
             return -1;
         }
 
+        fclose(f);
         free(path);
     }
+
+    // Write initial HEAD content
+    char headPath[sizeof(MINIGIT_INIT_DIR) + sizeof(MINIGIT_HEAD_FILE)];
+    snprintf(headPath, sizeof(headPath), "%s/%s", MINIGIT_INIT_DIR, MINIGIT_HEAD_FILE);
+    FILE *head = fopen(headPath, "w");
+    if (head == NULL) {
+        return -1;
+    }
+    fputs(MINIGIT_HEAD_INITIAL_CONTENT, head);
+    fclose(head);
 
     return 0;
 }

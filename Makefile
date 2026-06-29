@@ -16,7 +16,7 @@ TARGET  = minigit
 BUILD   = build
 
 # Source files: main.c plus everything under src/
-SRC     = main.c $(shell find src -name "*.c")
+SRC     = main.c $(shell find src -name "*.c" ! -path "$(TEST_DIR)/*")
 
 # Derive object file list: strip directory, swap .c for .o, prefix with build/
 # e.g. src/foo.c -> build/foo.o, main.c -> build/main.o
