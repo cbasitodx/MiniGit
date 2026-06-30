@@ -1,4 +1,4 @@
-#include "utils/errors.h"
+#include "minigit/utils/errors.h"
 
 #include <stdarg.h>
 #include <stdio.h>

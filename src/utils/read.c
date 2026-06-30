@@ -1,4 +1,4 @@
-#include "utils/read.h"
+#include "minigit/utils/read.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -27,14 +27,6 @@ size_t initializeBuffer(uint8_t **data) {
     return capacity;
 }
 
-/**
- * Reads data from the given stream and stores it in a dynamically allocated buffer.
- * The caller is responsible for freeing the allocated buffer.
- *
- * @param stream The input stream to read from.
- *
- * @return A Blob structure containing the read data and its size.
- */
 Blob readData(FILE *stream) {
     Blob blob = {0};
     size_t capacity = initializeBuffer(&(blob.data));

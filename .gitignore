@@ -1,6 +1,6 @@
-minigit
-minigit-tests
-build/
-.vscode/
-.minigit/
+/minigit
+/minigit-tests
+/build/
+/.vscode/
+/.minigit/
 /compile_commands.json
